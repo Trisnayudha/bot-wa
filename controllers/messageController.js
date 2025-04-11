@@ -19,19 +19,29 @@ class MessageController {
             return message.reply('Perintah ini hanya dapat digunakan di dalam grup.');
         }
     
-        // Periksa apakah pesan dimulai dengan '@everyone'
-        if (!message.body.startsWith('@everyone')) {
-            console.log('error')
-            return; // Tidak melakukan apa-apa jika tidak dimulai dengan '@everyone'
+        const msg = message.body;
+    
+        // Periksa apakah pesan dimulai dengan '@everyone' atau '.hidetag'
+        if (msg.startsWith('@everyone')) {
+            // Ambil daftar ID peserta
+            const mentions = chat.participants.map(p => p.id._serialized);
+    
+            // Kirim pesan dengan mention ke semua anggota grup
+            await chat.sendMessage(msg, {
+                mentions
+            });
+        } else if (msg.startsWith('.hidetag')) {
+            // Ambil daftar ID peserta
+            const mentions = chat.participants.map(p => p.id._serialized);
+    
+            // Hapus perintah '.hidetag' dari awal pesan
+            const content = msg.replace(/^\.hidetag\s*/i, '');
+    
+            // Kirim pesan dengan mention ke semua anggota grup
+            await chat.sendMessage(content, {
+                mentions
+            });
         }
-    
-        // Ambil daftar ID peserta
-        const mentions = chat.participants.map(p => p.id._serialized);
-    
-        // Kirim pesan dengan mention ke semua anggota grup
-        await chat.sendMessage(message.body, {
-            mentions
-        });
     }
     
 

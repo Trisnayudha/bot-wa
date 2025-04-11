@@ -1,28 +1,37 @@
 const messageController = require('../controllers/messageController');
+const guildController = require('../controllers/guildController');
 const OpenAIService = require('../openai/openaiService');
 
 class MessageRoutes {
     async routeMessage(message) {
-        const msg = message.body.toLowerCase();
+        const chat = await message.getChat();
+        const msg = message.body;
 
-        if (msg.startsWith('/info')) {
+        // Periksa apakah pesan berasal dari grup dengan ID tertentu
+        if (chat.id._serialized === '120363419644935064@g.us') {
+            if (msg === 'claim') {
+                await guildController.handleClaim(message);
+                return;
+            }
+        }
+
+        // Logika lainnya untuk pesan dari grup atau chat lain
+        const lowerMsg = msg.toLowerCase();
+
+        if (lowerMsg.startsWith('/info')) {
             messageController.handleInfo(message);
-        } else if (msg === '/event delegate') {
+        } else if (lowerMsg === '/event delegate') {
             await messageController.handleEventDelegate(message);
-        } else if (msg === '/total revenue') {
+        } else if (lowerMsg === '/total revenue') {
             await messageController.handleTotalRevenue(message);
-        } else if (msg === '/monthly revenue') {
+        } else if (lowerMsg === '/monthly revenue') {
             await messageController.handleMonthlyRevenue(message);
-        }else if (msg.startsWith('@everyone')) {
+        } else if (lowerMsg.startsWith('@everyone') || lowerMsg.startsWith('.hidetag')) {
             await messageController.handleTagAll(message);
-        }
-        // Perintah baru: /groupid
-        else if (msg === '/groupid') {
+        } else if (lowerMsg === '/groupid') {
             await messageController.handleGroupId(message);
-        }
-        // Perintah baru: /ask
-        else if (msg.startsWith('/ask')) {
-            const question = msg.replace('/ask', '').trim(); // Ambil pertanyaan
+        } else if (lowerMsg.startsWith('/ask')) {
+            const question = msg.slice(4).trim();
             if (question) {
                 const response = await OpenAIService.getResponse(question);
                 message.reply(response);
@@ -31,6 +40,8 @@ class MessageRoutes {
             }
         }
     }
+
+
 }
 
 module.exports = new MessageRoutes();
