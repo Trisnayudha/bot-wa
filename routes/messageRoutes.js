@@ -8,7 +8,7 @@ class MessageRoutes {
         const msg = message.body;
 
         // Periksa apakah pesan berasal dari grup dengan ID tertentu
-        if (chat.id._serialized === '120363419644935064@g.us') {
+        if (chat.id._serialized === '120363042863310424@g.us') {
             if (msg === 'claim') {
                 await guildController.handleClaim(message);
                 return;

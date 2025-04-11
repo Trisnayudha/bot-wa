@@ -13,19 +13,19 @@ class MessageController {
 
     async handleTagAll(message) {
         const chat = await message.getChat();
-    
+
         // Validasi: Pastikan chat adalah grup
         if (chat.id.server !== 'g.us') {
             return message.reply('Perintah ini hanya dapat digunakan di dalam grup.');
         }
-    
+
         const msg = message.body;
-    
+
         // Periksa apakah pesan dimulai dengan '@everyone' atau '.hidetag'
         if (msg.startsWith('@everyone')) {
             // Ambil daftar ID peserta
             const mentions = chat.participants.map(p => p.id._serialized);
-    
+
             // Kirim pesan dengan mention ke semua anggota grup
             await chat.sendMessage(msg, {
                 mentions
@@ -33,17 +33,17 @@ class MessageController {
         } else if (msg.startsWith('.hidetag')) {
             // Ambil daftar ID peserta
             const mentions = chat.participants.map(p => p.id._serialized);
-    
+
             // Hapus perintah '.hidetag' dari awal pesan
             const content = msg.replace(/^\.hidetag\s*/i, '');
-    
+
             // Kirim pesan dengan mention ke semua anggota grup
             await chat.sendMessage(content, {
                 mentions
             });
         }
     }
-    
+
 
     async handleGroupId(message) {
         const chat = await message.getChat();
@@ -56,13 +56,14 @@ class MessageController {
     }
 
     async handleInfo(message) {
+        console.log(message)
         const infoText = `
-        Berikut adalah perintah yang tersedia:
-        1. /event delegate - Menampilkan informasi delegate dari database.
-        2. /total revenue - Menampilkan total pendapatan.
-        3. /monthly revenue - Menampilkan total pendapatan per bulan.
-        4. !bot tagall - Mention semua anggota grup.
-        5. /groupid - Mendapatkan ID grup.
+Berikut adalah perintah yang tersedia:
+1. /event delegate - Menampilkan informasi delegate dari database.
+2. /total revenue - Menampilkan total pendapatan.
+3. /monthly revenue - Menampilkan total pendapatan per bulan.
+4. @everyone - Mention semua anggota grup.
+5. /groupid - Mendapatkan ID grup.
         `;
         message.reply(infoText);
     }
