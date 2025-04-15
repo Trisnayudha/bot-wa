@@ -8,13 +8,20 @@ class MessageRoutes {
         const msg = message.body;
 
         // Periksa apakah pesan berasal dari grup dengan ID tertentu
-        if (chat.id._serialized === '120363042863310424@g.us') {
-            if (msg === 'claim') {
+        if (chat.id._serialized === '120363042863310424@g.us' || chat.id._serialized === '120363040158938647@g.us') {
+            if (msg.toLowerCase() === 'claim') {
                 await guildController.handleClaim(message);
                 return;
             }
-        }
 
+            if (msg.toLowerCase() === 'discord') {
+                await guildController.handleDiscord(message);
+            }
+            // if (msg.startsWith('Nick:')) {
+            //     await guildController.handleNick(message);
+            //     return;
+            // }
+        }
         // Logika lainnya untuk pesan dari grup atau chat lain
         const lowerMsg = msg.toLowerCase();
 

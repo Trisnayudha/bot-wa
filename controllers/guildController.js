@@ -127,10 +127,6 @@ async function handleClaim(message) {
         return message.reply('Perintah ini hanya dapat digunakan di dalam grup.');
     }
 
-    // Validasi: Pastikan perintah hanya dapat digunakan di grup tertentu
-    if (chat.id._serialized !== '120363042863310424@g.us') {
-        return message.reply('Perintah ini hanya tersedia di grup khusus.');
-    }
 
     const response = `Nick: 
 Race: 
@@ -150,8 +146,47 @@ Booster Divine:`;
     await message.reply(response);
 }
 
+async function handleDiscord(message) {
+    const chat = await message.getChat();
+
+    const response = `https://discord.gg/4w86x6gG`;
+
+    await message.reply(response);
+}
+
+
+async function handleNick(message) {
+    const chat = await message.getChat();
+    const msg = message.body.trim();
+
+    // Memeriksa apakah pesan dimulai dengan "Nick:" dan terdapat data setelah titik dua
+    if (msg.startsWith('Nick:') && msg.split(':')[1]?.trim()) {
+        // Tentukan nomor tujuan untuk meneruskan pesan
+        const targetNumber = '083829314436@c.us';  // Gantilah dengan nomor tujuan yang Anda tuju
+
+        try {
+            // Mendapatkan ID chat tujuan
+            const targetChat = await chat.getChatById(targetNumber);
+            if (targetChat) {
+                // Kirim pesan ke nomor tujuan
+                await targetChat.sendMessage(message.body);
+                console.log('Pesan berhasil diteruskan ke nomor:', targetNumber);
+            } else {
+                console.error('Chat tujuan tidak ditemukan.');
+            }
+        } catch (error) {
+            console.error('Gagal meneruskan pesan:', error);
+        }
+    } else {
+        message.reply('Format perintah Nick salah! Gunakan format: Nick: [Nick]');
+    }
+}
+
+
 module.exports = {
     handleGroupJoin,
     handleClaim,
-    handleGroupLeave
+    handleGroupLeave,
+    handleNick,
+    handleDiscord
 };
