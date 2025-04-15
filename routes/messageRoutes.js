@@ -37,7 +37,7 @@ class MessageRoutes {
             await messageController.handleTagAll(message);
         } else if (lowerMsg === '/groupid') {
             await messageController.handleGroupId(message);
-        } else if (lowerMsg.startsWith('/ask')) {
+        } else if (lowerMsg.startsWith('.ai')) {
             const question = msg.slice(4).trim();
             if (question) {
                 const response = await OpenAIService.getResponse(question);
