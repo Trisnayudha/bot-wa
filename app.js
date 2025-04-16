@@ -4,10 +4,13 @@ const qrcode = require('qrcode-terminal');
 const messageRoutes = require('./routes/messageRoutes');
 const guildController = require('./controllers/guildController');
 
+// Membuat client WhatsApp
 const client = new Client({
-    authStrategy: new LocalAuth()
+    authStrategy: new LocalAuth(),  // Menggunakan LocalAuth untuk menyimpan session
+    puppeteer: {
+        args: ['--no-sandbox', '--disable-setuid-sandbox']  // Menambahkan opsi untuk bypass sandboxing
+    }
 });
-
 client.on('qr', (qr) => {
     qrcode.generate(qr, { small: true });
 });
