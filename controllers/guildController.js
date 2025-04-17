@@ -252,11 +252,6 @@ async function handleStatusChip(message) {
     }
 }
 
-
-
-
-
-
 module.exports = {
     handleGroupJoin,
     handleClaim,
