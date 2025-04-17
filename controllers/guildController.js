@@ -1,4 +1,10 @@
 const { MessageMedia } = require('whatsapp-web.js');
+const puppeteer = require('puppeteer-extra');
+const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+const axios = require('axios');
+
+// Use the stealth plugin to bypass Cloudflare's protections
+puppeteer.use(StealthPlugin());
 
 async function handleGroupJoin(notification, client) {
     try {
@@ -183,10 +189,79 @@ async function handleNick(message) {
 }
 
 
+async function handleStatusChip(message) {
+    try {
+        // Launch Puppeteer with stealth plugin enabled
+        const browser = await puppeteer.launch({ headless: true });
+        const page = await browser.newPage();
+
+        // Open the page where the data resides
+        await page.goto('https://kairos.gamecp.net/web_api/?do=satu', { waitUntil: 'domcontentloaded' });
+
+        // Check if the <pre> tag is present, and then extract its content
+        const content = await page.evaluate(() => {
+            const preTag = document.querySelector('pre');
+            return preTag ? preTag.innerText : null;
+        });
+
+        await browser.close();
+
+        if (content) {
+            // Try to parse the content as JSON
+            try {
+                const data = JSON.parse(content);
+
+                const result = data.result;
+
+                const serverStatus = result.status_game || 'OFFLINE';
+                const usersOnline = result.online_field || '0';
+                const oreMiningProgress = result.orepercent || '0';
+                const accretiaChipProgress = result.chip_a || '0';
+                const bellatoChipProgress = result.chip_b || '0';
+                const coraChipProgress = result.chip_c || '0';
+                const winChip = result.win_race || 'No data';
+                const loseChip = result.lose_race || 'No data';
+                const cbChip = result.cb_name || 'No data';
+
+                const statusMessage = `
+*Server Status*: ${serverStatus}
+*Users Online*: ${usersOnline}
+*Ore Mining Progress*: ${oreMiningProgress}%
+*Accretia Chip Progress*: ${accretiaChipProgress}%
+*Bellato Chip Progress*: ${bellatoChipProgress}%
+*Cora Chip Progress*: ${coraChipProgress}%
+*Win Chip*: ${winChip}
+*Lose Chip*: ${loseChip}
+*CB Chip*: ${cbChip}
+                `;
+
+                // Mengirim pesan ke WhatsApp
+                await message.reply(statusMessage);
+            } catch (jsonError) {
+                console.error('Error parsing JSON:', jsonError);
+                await message.reply('Ada masalah dalam mengambil data dari server. Coba lagi nanti.');
+            }
+        } else {
+            console.error('No <pre> tag found on the page');
+            await message.reply('Tidak dapat menemukan data dari server. Coba lagi nanti.');
+        }
+
+    } catch (error) {
+        console.error('Error mengambil data:', error);
+        await message.reply('Ada kesalahan dalam mengambil data. Coba lagi nanti!');
+    }
+}
+
+
+
+
+
+
 module.exports = {
     handleGroupJoin,
     handleClaim,
     handleGroupLeave,
     handleNick,
-    handleDiscord
+    handleDiscord,
+    handleStatusChip
 };

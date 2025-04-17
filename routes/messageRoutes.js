@@ -17,10 +17,10 @@ class MessageRoutes {
             if (msg.toLowerCase() === 'discord') {
                 await guildController.handleDiscord(message);
             }
-            // if (msg.startsWith('Nick:')) {
-            //     await guildController.handleNick(message);
-            //     return;
-            // }
+            if (msg.toLowerCase() === '.statuschip') {
+                // Memanggil fungsi handleStatusChip jika pesan adalah .statusChip
+                await guildController.handleStatusChip(message);
+            }
         }
         // Logika lainnya untuk pesan dari grup atau chat lain
         const lowerMsg = msg.toLowerCase();

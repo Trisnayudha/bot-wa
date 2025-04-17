@@ -13,14 +13,16 @@
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/baileys": "^6.7.16",
     "axios": "^1.8.4",
+    "cheerio": "^1.0.0",
     "crypto": "^1.0.1",
     "dotenv": "^16.5.0",
     "fs": "^0.0.1-security",
     "knex": "^3.1.0",
     "mysql2": "^3.14.0",
-    "node-fetch": "^3.3.2",
     "openai": "^4.77.3",
     "puppeteer": "^23.11.1",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
     "qrcode-terminal": "^0.12.0",
     "whatsapp-web.js": "^1.26.0"
   }
