@@ -248,7 +248,7 @@ async function handleStatusChip(message) {
 
     } catch (error) {
         console.error('Error mengambil data:', error);
-        await message.reply('Ada kesalahan dalam mengambil data. Coba lagi nanti!');
+        await message.reply('Ada kesalahan dalam mengambil data. Coba lagi nanti!' .error);
     }
 }
 
