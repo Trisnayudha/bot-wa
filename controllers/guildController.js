@@ -2,9 +2,22 @@ const { MessageMedia } = require('whatsapp-web.js');
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const axios = require('axios');
+const mysql = require('mysql2/promise');
+require('dotenv').config();
 
 // Use the stealth plugin to bypass Cloudflare's protections
 puppeteer.use(StealthPlugin());
+
+const pool = mysql.createPool({
+    host: process.env.DB_HOST,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+});
+
 
 async function handleGroupJoin(notification, client) {
     try {
@@ -153,11 +166,22 @@ Booster Divine:`;
 }
 
 async function handleDiscord(message) {
-    const chat = await message.getChat();
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [rows] = await connection.query('SELECT link FROM discord_links ORDER BY created_at DESC LIMIT 1');
 
-    const response = `https://discord.gg/4w86x6gG`;
-
-    await message.reply(response);
+        if (rows.length > 0) {
+            return rows[0].link;  // Mengembalikan link Discord terakhir yang disimpan
+        } else {
+            return 'Link Discord belum diset.';
+        }
+    } catch (error) {
+        console.error('Gagal mengambil link Discord:', error);
+        return 'Terjadi kesalahan saat mengambil link Discord.';
+    } finally {
+        if (connection) connection.release();
+    }
 }
 
 
@@ -185,6 +209,23 @@ async function handleNick(message) {
         }
     } else {
         message.reply('Format perintah Nick salah! Gunakan format: Nick: [Nick]');
+    }
+}
+
+async function setDiscordLink(link) {
+    let connection;
+    try {
+        connection = await pool.getConnection();
+        const [result] = await connection.query(
+            'INSERT INTO discord_links (link) VALUES (?)',
+            [link]
+        );
+        return `Link Discord berhasil disimpan dengan ID ${result.insertId}.`;
+    } catch (error) {
+        console.error('Gagal menyimpan link Discord:', error);
+        return 'Terjadi kesalahan saat menyimpan link Discord.';
+    } finally {
+        if (connection) connection.release();
     }
 }
 
@@ -248,7 +289,7 @@ async function handleStatusChip(message) {
 
     } catch (error) {
         console.error('Error mengambil data:', error);
-        await message.reply('Ada kesalahan dalam mengambil data. Coba lagi nanti!' .error);
+        await message.reply('Ada kesalahan dalam mengambil data. Coba lagi nanti!'.error);
     }
 }
 
@@ -258,5 +299,6 @@ module.exports = {
     handleGroupLeave,
     handleNick,
     handleDiscord,
-    handleStatusChip
+    handleStatusChip,
+    setDiscordLink
 };

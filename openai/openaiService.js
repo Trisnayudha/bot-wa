@@ -61,7 +61,7 @@ class DeepSeekService {
     let connection;
     try {
       connection = await pool.getConnection();
-      
+
       // Insert new message
       await connection.query(
         `INSERT INTO chat_histories (chat_id, role, message)
@@ -99,18 +99,19 @@ class DeepSeekService {
     };
   }
 
-  static async getResponse(question, chatId = 'default', isContinued = false) {
+  static async getResponse(question, chatId, isReply, isJaksel = false) {
     try {
       let messages = await this.#getHistory(chatId);
-      // Tambahkan pesan user/assistant
-      if (isContinued) {
-        messages.push({ role: 'assistant', content: question });
-        await this.#saveHistory(chatId, 'assistant', question);
+
+      // Tambahkan pesan user atau assistant
+      if (isReply) {
+        messages.push({ role: 'user', content: `Ini balasan dari pesan sebelumnya: "${question}"` });
       } else {
         messages.push({ role: 'user', content: question });
-        await this.#saveHistory(chatId, 'user', question);
       }
+      await this.#saveHistory(chatId, 'user', question);
 
+      // Kirim request ke API DeepSeek
       const response = await deepseek.post('/chat/completions', {
         model: 'deepseek-chat',
         messages: messages,
@@ -120,8 +121,14 @@ class DeepSeekService {
         frequency_penalty: 0.5
       });
 
-      const aiResponse = this.#addJakselFlavor(response.data.choices[0].message.content.trim());
-      
+      // Ambil respons dari DeepSeek
+      let aiResponse = response.data.choices[0].message.content.trim();
+
+      // Jika isJaksel true, tambahkan gaya Jaksel ke respons
+      if (isJaksel) {
+        aiResponse = this.#addJakselFlavor(aiResponse);
+      }
+
       // Simpan response AI
       messages.push({ role: 'assistant', content: aiResponse });
       await this.#saveHistory(chatId, 'assistant', aiResponse);
@@ -133,212 +140,27 @@ class DeepSeekService {
     }
   }
 
-  
-
   // Helper untuk nambahin gaya Jaksel
   static #addJakselFlavor(text) {
     const jakselPhrases = [
-      'lur', 
-      'ges', 
-      'yak', 
-      'sih', 
-      'dongs', 
-      'which is', 
-      'literally', 
-      'anjir', 
-      'btw', 
-      'kek', 
-      '...', 
-      'bro', 
-      'sis', 
-      'banget', 
-      'gimana sih', 
-      'ya kan', 
-      'tuh', 
-      'pasti', 
-      'gokil', 
-      'asik', 
-      'cuy', 
-      'seru sih', 
-      'nggak sih', 
-      'kepo', 
-      'parah', 
-      'pokoknya', 
-      'nggak banget', 
-      'hype banget', 
-      'biasa aja', 
-      'lebih keren', 
-      'udah deh', 
-      'cinta banget', 
-      'lumayan', 
-      'beneran', 
-      'capek deh', 
-      'fix', 
-      'habis itu', 
-      'gini nih', 
-      'kerja keras', 
-      'asli', 
-      'keknya', 
-      'bener sih', 
-      'nggak ada lawan', 
-      'jangan sampe', 
-      'eh tapi', 
-      'diem-diem', 
-      'serius', 
-      'gaul', 
-      'baper', 
-      'santai aja', 
-      'ih iyah', 
-      'ah masa sih', 
-      'gimana ya', 
-      'mantep', 
-      'sama aja', 
-      'terserah', 
-      'oke lah', 
-      'wah gitu ya', 
-      'eh serius deh', 
-      'yoi', 
-      'lets go', 
-      'anjir, gila', 
-      'gitu aja kok repot', 
-      'asik banget', 
-      'gokil deh', 
-      'seru banget', 
-      'makasih ya', 
-      'biasa aja lah', 
-      'pas banget', 
-      'udah tau', 
-      'gapapa deh', 
-      'eh lu tau ga', 
-      'udah gitu aja', 
-      'gimana kalo', 
-      'seru banget ga sih', 
-      'nggak nyangka deh', 
-      'nggak ada habisnya', 
-      'mantul', 
-      'gaul banget', 
-      'semangat terus', 
-      'aneh sih', 
-      'yah, kalo gitu sih', 
-      'keren banget sih', 
-      'kalo udah gitu', 
-      'biasa banget', 
-      'aduh gue sih', 
-      'jangan gitu dong', 
-      'cuma gitu doang', 
-      'seru banget ya', 
-      'enak banget sih', 
-      'tapi bener loh', 
-      'eh, katanya', 
-      'gak pernah se-hype ini', 
-      'jadi inget deh', 
-      'ga ada bandingannya', 
-      'dulu gue banget sih', 
-      'wah pas banget', 
-      'yaudah deh', 
-      'bukan masalah sih', 
-      'terus terang', 
-      'aduh, capek banget', 
-      'jadi pengen sih', 
-      'kayaknya deh', 
-      'sama gue juga sih', 
-      'nanti gue kasih tau', 
-      'eh pas banget', 
-      'anjir sih', 
-      'gak ngerti gue', 
-      'yuk, yuk', 
-      'bener banget sih', 
-      'percaya deh', 
-      'yap', 
-      'gue bisa jadi', 
-      'ya gitu deh', 
-      'kayaknya sih', 
-      'nanggung banget', 
-      'seru deh', 
-      'nyantai aja', 
-      'ngomong-ngomong', 
-      'kepo banget sih', 
-      'ya gitu', 
-      'bukan cuma itu', 
-      'emang sih', 
-      'santai, santai', 
-      'ada apa sih', 
-      'kalo gitu gini deh', 
-      'cuma biar lebih keren', 
-      'ngetes aja', 
-      'deh gitu', 
-      'nggak gitu loh', 
-      'iya banget', 
-      'wah keren banget', 
-      'eh beneran', 
-      'cuy, itu loh', 
-      'di rumah gue', 
-      'percaya ga percaya', 
-      'ah, biasa aja', 
-      'gue juga sih', 
-      'gila ya', 
-      'oke deh', 
-      'sama banget deh', 
-      'bisa aja', 
-      'makasih banyak', 
-      'parah banget', 
-      'pas banget loh', 
-      'seru banget ya', 
-      'gokil banget sih', 
-      'yaudah lah', 
-      'tapi kalo', 
-      'gitu banget', 
-      'mungkin kali ya', 
-      'soalnya sih', 
-      'lebih bagus sih', 
-      'bisa banget', 
-      'seru banget kan', 
-      'lebih seru', 
-      'pokoknya deh', 
-      'ya lu deh', 
-      'ga suka deh', 
-      'kayak gitu', 
-      'gini deh', 
-      'gitu deh', 
-      'ntar dulu', 
-      'gila banget', 
-      'kebanyakan sih', 
-      'enggak deh', 
-      'ini beneran', 
-      'seru kan', 
-      'ih lucu banget', 
-      'nggak ada yang ngalahin', 
-      'oke gue setuju', 
-      'bener sih', 
-      'masih ada sih', 
-      'gue pasti bisa', 
-      'keren banget banget', 
-      'pasti banget', 
-      'jadi penasaran', 
-      'sama kayak gue', 
-      'semoga berhasil', 
-      'ini baru seru', 
-      'seru banget dah', 
-      'di luar dugaan', 
-      'seru banget banget', 
-      'mantep banget', 
-      'gak salah sih', 
-      'gimana kalo kita', 
-      'udah siap', 
-      'emang sih', 
-      'gue penasaran banget', 
-      'emang udah gitu', 
-      'seru banget coy'
+      'lur', 'ges', 'yak', 'sih', 'dongs', 'which is', 'literally', 'anjir', 'btw', 'kek',
+      '...', 'bro', 'sis', 'banget', 'gimana sih', 'ya kan', 'tuh', 'pasti', 'gokil', 'asik', 'cuy',
+      'mas', 'mba', 'gaskeun', 'santai aja', 'kerja keras', 'mantap', 'fix', 'ayo', 'yuk', 'semangat',
+      'enak banget', 'gimana nih', 'udah lah', 'seru banget', 'capek deh', 'bener sih', 'nggak sih',
+      'kerja keras banget', 'selalu berhasil', 'mantep banget', 'fix banget', 'bener banget', 'eh serius deh',
+      'semangat terus', 'jangan lupa', 'yoi', 'oke lah', 'gas terus', 'jangan sampe gagal', 'udah gitu aja',
+      'pokoknya gitu', 'gaul banget', 'asli', 'keren banget sih', 'pasti banget', 'gitu dong', 'jadi deh', 'masuk akal'
     ];
 
-    // Tambahin random Jaksel phrase tiap 2-3 kalimat
     return text.split('. ').map((sentence, index) => {
+      // Randomly insert Jaksel phrase into every alternate sentence
       if (index % 2 === 0 && Math.random() > 0.5) {
-        return `${sentence} ${jakselPhrases[Math.floor(Math.random()*jakselPhrases.length)]}`
+        return `${sentence} ${jakselPhrases[Math.floor(Math.random() * jakselPhrases.length)]}`;
       }
       return sentence;
     }).join('. ').replace(/\.+/g, '.');
   }
+
 }
 
 module.exports = DeepSeekService;
