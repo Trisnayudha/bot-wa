@@ -123,50 +123,50 @@ Berikut adalah perintah yang tersedia:
     }
     async handleMenu(message) {
         const menuText = `
-    📋 *DAFTAR MENU BOT GUILD* 📋
+📋 *DAFTAR MENU BOT GUILD* 📋
     
-    Berikut adalah command yang bisa kamu gunakan di grup:
+Berikut adalah command yang bisa kamu gunakan di grup:
     
-    🔹 *.hidetag <pesan>*  
-    _➤ Mention semua member tanpa terlihat_  
-    Contoh: *.hidetag Jangan lupa war jam 8 malam ya!*
+🔹 *.hidetag <pesan>*  
+_➤ Mention semua member tanpa terlihat_  
+Contoh: *.hidetag Jangan lupa war jam 8 malam ya!*
     
-    🔹 *.setdiscord <link>*  
-    _➤ Simpan link Discord terbaru ke database_  
-    Contoh: *.setdiscord https://discord.gg/abc123*
+🔹 *.setdiscord <link>*  
+_➤ Simpan link Discord terbaru ke database_  
+Contoh: *.setdiscord https://discord.gg/abc123*
     
-    🔹 *discord*  
-    _➤ Tampilkan link Discord yang tersimpan_
+🔹 *discord*  
+_➤ Tampilkan link Discord yang tersimpan_
     
-    🔹 *.menu*  
-    _➤ Menampilkan daftar semua perintah yang tersedia_
+🔹 *.menu*  
+_➤ Menampilkan daftar semua perintah yang tersedia_
     
-    🔹 *claim*  
-    _➤ Klaim GPACK hadiah guild_
+🔹 *claim*  
+_➤ Klaim GPACK hadiah guild_
     
-    🔹 *.ai <prompt>*  
-    _➤ Tanya ke AI dengan gaya anak Jaksel_  
-    Contoh: *.ai gimana caranya biar gue gak insecure pas war?*
+🔹 *.ai <prompt>*  
+_➤ Tanya ke AI dengan gaya anak Jaksel_  
+Contoh: *.ai gimana caranya biar gue gak insecure pas war?*
     
-    🔹 */ask <prompt>*  
-    _➤ Tanya ke AI dengan bahasa formal_  
-    Contoh: /ask Bagaimana cara meningkatkan performa tim dalam event?
+🔹 */ask <prompt>*  
+_➤ Tanya ke AI dengan bahasa formal_  
+Contoh: /ask Bagaimana cara meningkatkan performa tim dalam event?
     
-    🔹 *.ai buatkan saya gambar <deskripsi>*  
-    _➤ Generate gambar berdasarkan deskripsi_  
-    Contoh: *.ai buatkan saya gambar naga terbang di langit*  
-    ⚠️ *Batas: Maks. 3 gambar per hari per grup*
+🔹 *.ai buatkan saya gambar <deskripsi>*  
+_➤ Generate gambar berdasarkan deskripsi_  
+Contoh: *.ai buatkan saya gambar naga terbang di langit*  
+⚠️ *Batas: Maks. 3 gambar per hari per grup*
     
-    🔹 *.statuschip*  
-    _➤ Melihat status server saat ini_  
-    ⚙️ *Coming Soon (maintenance)*
+🔹 *.statuschip*  
+_➤ Melihat status server saat ini_  
+⚙️ *Coming Soon (maintenance)*
     
-    🔹 *.updatelog*  
-    _➤ Melihat update terbaru setelah maintenance_  
-    ⚙️ *Coming Soon (maintenance)*
+🔹 *.updatelog*  
+_➤ Melihat update terbaru setelah maintenance_  
+⚙️ *Coming Soon (maintenance)*
     
-    💡 Catatan:
-    Semua command ini hanya berfungsi jika digunakan di grup yang terdaftar.
+💡 Catatan:
+Semua command ini hanya berfungsi jika digunakan di grup yang terdaftar.
         `;
         await message.reply(menuText);
     }
