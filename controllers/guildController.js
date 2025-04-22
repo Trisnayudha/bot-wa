@@ -147,20 +147,13 @@ async function handleClaim(message) {
     }
 
 
-    const response = `Nick: 
-Race: 
-2 PCS Ancient Weapon: 
-1 Set Ancient Armor: 
-1 Set Ancient Elemental: 
-Mask Divine: 
-Booster Divine: 
-1 PCS Ancient Booster: 
-1 PCS Ancient Shield: 
-1 PCS Ancient Mask: 
-1 PCS Leon Weapon: 
-1 PCS Jade Level Permanent
-Mask Divine: 
-Booster Divine:`;
+    const response = `Nick : 
+Celestial Weapon(donasi high) :
+Cosmic Weapon(donasi cupu) :
+Celestial elemental: 
+Cosmic booster : 
+Cosmic armor : 
+Cosmic shield :`;
 
     await message.reply(response);
 }
@@ -237,7 +230,7 @@ async function handleStatusChip(message) {
         const page = await browser.newPage();
 
         // Open the page where the data resides
-        await page.goto('https://kairos.gamecp.net/web_api/?do=satu', { waitUntil: 'domcontentloaded' });
+        await page.goto('https://universe.gamecp.net/web_api/?do=satu', { waitUntil: 'domcontentloaded' });
 
         // Check if the <pre> tag is present, and then extract its content
         const content = await page.evaluate(() => {
