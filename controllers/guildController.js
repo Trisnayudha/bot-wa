@@ -226,13 +226,14 @@ async function setDiscordLink(link) {
 async function handleStatusChip(message) {
     try {
         // Launch Puppeteer with stealth plugin enabled
-        const browser = await puppeteer.launch({ headless: true });
-        const page = await browser.newPage();
+        const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
 
-        // Open the page where the data resides
+        const page = await browser.newPage();
         await page.goto('https://universe.gamecp.net/web_api/?do=satu', { waitUntil: 'domcontentloaded' });
 
-        // Check if the <pre> tag is present, and then extract its content
         const content = await page.evaluate(() => {
             const preTag = document.querySelector('pre');
             return preTag ? preTag.innerText : null;
