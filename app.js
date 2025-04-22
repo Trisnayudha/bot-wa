@@ -3,6 +3,7 @@ const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const messageRoutes = require('./routes/messageRoutes');
 const guildController = require('./controllers/guildController');
+const SchedulerService = require('./services/schedulerService');  // Import
 
 // Membuat client WhatsApp
 const client = new Client({
@@ -17,6 +18,9 @@ client.on('qr', (qr) => {
 
 client.on('ready', () => {
     console.log('WhatsApp bot sudah siap!');
+
+    const scheduler = new SchedulerService(client);  // Init service
+    scheduler.start();  // Start scheduler
 });
 
 client.on('message', async (message) => {
