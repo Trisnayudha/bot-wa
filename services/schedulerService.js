@@ -1,5 +1,9 @@
 const cron = require('node-cron');
 const mysql = require('mysql2/promise');
+const RfWarHandler = require('./handlers/rfWarHandler');
+const DailyReminderHandler = require('./handlers/dailyReminderHandler');
+const DefaultHandler = require('./handlers/defaultHandler'); // Tambah ini
+require('dotenv').config();
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
@@ -22,31 +26,39 @@ class SchedulerService {
 
             schedules.forEach(schedule => {
                 cron.schedule(schedule.cron_expression, async () => {
-                    const chatId = schedule.chat_id;
-                    const message = schedule.message;
+                    const startTime = new Date();
+                    console.log(`🚀 [${schedule.id}] Mulai task (${schedule.type}) pada ${startTime.toLocaleString()}`);
 
                     try {
-                        const chat = await this.client.getChatById(chatId);
+                        let handler;
 
-                        if (chatId.endsWith('@g.us')) {
-                            const mentions = chat.participants.map(p => p.id._serialized);
-                            await chat.sendMessage(message, { mentions });
-                            console.log(`Pesan (group + hidetag) terkirim ke ${chatId}`);
-                        } else {
-                            await this.client.sendMessage(chatId, message);
-                            console.log(`Pesan (personal) terkirim ke ${chatId}`);
+                        switch (schedule.type) {
+                            case 'rf-war':
+                                handler = new RfWarHandler(this.client, schedule);
+                                break;
+                            case 'daily-reminder':
+                                handler = new DailyReminderHandler(this.client, schedule);
+                                break;
+                            default:
+                                handler = new DefaultHandler(this.client, schedule); // Fallback ke DefaultHandler
+                                break;
                         }
+
+                        await handler.handle(); // Eksekusi handler
                     } catch (err) {
-                        console.error(`Gagal kirim pesan ke ${chatId}:`, err);
+                        console.error(`❌ Error eksekusi jadwal ID ${schedule.id}:`, err);
                     }
+
+                    const endTime = new Date();
+                    console.log(`✅ [${schedule.id}] Selesai task pada ${endTime.toLocaleString()} (Durasi: ${(endTime - startTime) / 1000}s)`);
                 }, {
                     timezone: schedule.timezone || 'Asia/Jakarta'
                 });
             });
 
-            console.log('Scheduler dari DB aktif 🚀');
+            console.log('🚀 Scheduler aktif dan menjadwalkan semua task dari DB!');
         } catch (error) {
-            console.error('Gagal ambil jadwal dari DB:', error);
+            console.error('❌ Gagal ambil data jadwal dari DB:', error);
         }
     }
 }

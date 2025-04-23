@@ -161,6 +161,22 @@ class DeepSeekService {
     }).join('. ').replace(/\.+/g, '.');
   }
 
+  // Fungsi khusus generate pesan dari scheduler (tanpa history)
+  static async generateScheduleMessage(customPrompt) {
+    try {
+      const response = await deepseek.post('/chat/completions', {
+        model: 'deepseek-chat',
+        messages: [{ role: 'user', content: customPrompt }],
+        max_tokens: 100,  // biar singkat & padat
+        temperature: 0.3  // seimbang antara random & akurat
+      });
+
+      return response.data.choices[0].message.content.trim();
+    } catch (error) {
+      console.error('Error generate message dari DeepSeek:', error.response?.data || error.message);
+      return 'Semangat ya tim, tetap produktif!'; // fallback kalau error
+    }
+  }
 }
 
 module.exports = DeepSeekService;
