@@ -3,6 +3,7 @@ const mysql = require('mysql2/promise');
 const RfWarHandler = require('./handlers/rfWarHandler');
 const DailyReminderHandler = require('./handlers/dailyReminderHandler');
 const DefaultHandler = require('./handlers/defaultHandler'); // Tambah ini
+const PersonalHandler = require('./handlers/personalHandler'); // Tambah import
 require('dotenv').config();
 
 const pool = mysql.createPool({
@@ -32,17 +33,22 @@ class SchedulerService {
                     try {
                         let handler;
 
-                        switch (schedule.type) {
-                            case 'rf-war':
+                        switch (true) {
+                            case schedule.use_ai && schedule.type === 'rf-war':
                                 handler = new RfWarHandler(this.client, schedule);
                                 break;
-                            case 'daily-reminder':
+                            case schedule.use_ai && schedule.type === 'daily-reminder':
                                 handler = new DailyReminderHandler(this.client, schedule);
                                 break;
+                            case schedule.use_ai && schedule.type === 'personal':
+                                handler = new PersonalHandler(this.client, schedule);
+                                break;
                             default:
-                                handler = new DefaultHandler(this.client, schedule); // Fallback ke DefaultHandler
+                                // Fallback semua yang use_ai = 0 ke DefaultHandler
+                                handler = new DefaultHandler(this.client, schedule);
                                 break;
                         }
+
 
                         await handler.handle(); // Eksekusi handler
                     } catch (err) {
