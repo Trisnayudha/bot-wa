@@ -11,8 +11,13 @@ class RfWarHandler {
     }
 
     async getStatusChip() {
+        const isProduction = process.env.NODE_ENV === 'production'; // Cek environment
+
         try {
-            const browser = await puppeteer.launch({ headless: true, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+            const browser = await puppeteer.launch({
+                headless: true,
+                args: isProduction ? ['--no-sandbox', '--disable-setuid-sandbox'] : [] // Auto switch sandbox
+            });
             const page = await browser.newPage();
             await page.goto('https://universe.gamecp.net/web_api/?do=satu', { waitUntil: 'domcontentloaded' });
 
@@ -41,12 +46,7 @@ class RfWarHandler {
             actionPhrase = 'Kesempatan masih terbuka untuk menangkan WAR malam ini, jangan sampai Bellato atau Cora mendominasi!';
         }
 
-        const filledPrompt = this.schedule.ai_prompt
-            .replace('{actionPhrase}', actionPhrase)
-            .replace('{online_field}', online_field)
-            .replace('{win_race}', win_race);
-
-        return `
+        const dataSummary = `
 Status Server: ${status_game}
 Users Online: ${online_field}
 Accretia Chip: ${chip_a}%
@@ -54,9 +54,14 @@ Bellato Chip: ${chip_b}%
 Cora Chip: ${chip_c}%
 Pemenang Chip Sebelumnya: ${win_race}
 Kalah Chip Sebelumnya: ${lose_race}
+`;
 
-${filledPrompt}
-        `;
+        const filledPrompt = this.schedule.ai_prompt
+            .replace('{actionPhrase}', actionPhrase)
+            .replace('{online_field}', online_field)
+            .replace('{win_race}', win_race);
+
+        return `${dataSummary}\n\n${filledPrompt}`;
     }
 
     async handle() {
