@@ -167,7 +167,7 @@ class DeepSeekService {
       const response = await deepseek.post('/chat/completions', {
         model: 'deepseek-chat',
         messages: [{ role: 'user', content: customPrompt }],
-        max_tokens: 100,  // biar singkat & padat
+        max_tokens: 500,  // biar singkat & padat
         temperature: 0.3  // seimbang antara random & akurat
       });
 
