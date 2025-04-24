@@ -1,9 +1,11 @@
+// schedulerService.js
+
 const cron = require('node-cron');
 const mysql = require('mysql2/promise');
 const RfWarHandler = require('./handlers/rfWarHandler');
 const DailyReminderHandler = require('./handlers/dailyReminderHandler');
-const DefaultHandler = require('./handlers/defaultHandler'); // Tambah ini
-const PersonalHandler = require('./handlers/personalHandler'); // Tambah import
+const PersonalHandler = require('./handlers/personalHandler');
+const DefaultHandler = require('./handlers/defaultHandler');
 require('dotenv').config();
 
 const pool = mysql.createPool({
@@ -19,53 +21,94 @@ const pool = mysql.createPool({
 class SchedulerService {
     constructor(client) {
         this.client = client;
+        this.scheduled = new Map();  // Map<scheduleId, cronTask>
     }
 
-    async start() {
+    // Load active schedules from DB, register new ones and stop removed ones
+    async loadAndSchedule() {
+        let schedules;
         try {
-            const [schedules] = await pool.query('SELECT * FROM schedules WHERE is_active = 1');
+            [schedules] = await pool.query(
+                'SELECT * FROM schedules WHERE is_active = 1'
+            );
+        } catch (err) {
+            console.error('❌ Gagal ambil data jadwal dari DB:', err);
+            return;
+        }
 
-            schedules.forEach(schedule => {
-                cron.schedule(schedule.cron_expression, async () => {
-                    const startTime = new Date();
-                    console.log(`🚀 [${schedule.id}] Mulai task (${schedule.type}) pada ${startTime.toLocaleString()}`);
+        const activeIds = new Set();
 
-                    try {
-                        let handler;
+        // Register new schedules
+        for (const s of schedules) {
+            activeIds.add(s.id);
 
-                        switch (true) {
-                            case schedule.use_ai && schedule.type === 'rf-war':
-                                handler = new RfWarHandler(this.client, schedule);
-                                break;
-                            case schedule.use_ai && schedule.type === 'daily-reminder':
-                                handler = new DailyReminderHandler(this.client, schedule);
-                                break;
-                            case schedule.use_ai && schedule.type === 'personal':
-                                handler = new PersonalHandler(this.client, schedule);
-                                break;
-                            default:
-                                // Fallback semua yang use_ai = 0 ke DefaultHandler
-                                handler = new DefaultHandler(this.client, schedule);
-                                break;
+            if (!this.scheduled.has(s.id)) {
+                const task = cron.schedule(
+                    s.cron_expression,
+                    async () => {
+                        const start = new Date();
+                        console.log(`🚀 [${s.id}] Mulai task (${s.type}) pada ${start.toLocaleString()}`);
+
+                        try {
+                            let handler;
+                            if (s.use_ai) {
+                                switch (s.type) {
+                                    case 'rf-war':
+                                        handler = new RfWarHandler(this.client, s);
+                                        break;
+                                    case 'daily-reminder':
+                                        handler = new DailyReminderHandler(this.client, s);
+                                        break;
+                                    case 'personal':
+                                        handler = new PersonalHandler(this.client, s);
+                                        break;
+                                    default:
+                                        handler = new DefaultHandler(this.client, s);
+                                }
+                            } else {
+                                handler = new DefaultHandler(this.client, s);
+                            }
+
+                            await handler.handle();
+                        } catch (err) {
+                            console.error(`❌ Error eksekusi jadwal ID ${s.id}:`, err);
                         }
 
-
-                        await handler.handle(); // Eksekusi handler
-                    } catch (err) {
-                        console.error(`❌ Error eksekusi jadwal ID ${schedule.id}:`, err);
+                        const end = new Date();
+                        console.log(`✅ [${s.id}] Selesai task pada ${end.toLocaleString()} (Durasi: ${(end - start) / 1000}s)`);
+                    },
+                    {
+                        timezone: s.timezone || 'Asia/Jakarta'
                     }
+                );
 
-                    const endTime = new Date();
-                    console.log(`✅ [${schedule.id}] Selesai task pada ${endTime.toLocaleString()} (Durasi: ${(endTime - startTime) / 1000}s)`);
-                }, {
-                    timezone: schedule.timezone || 'Asia/Jakarta'
-                });
-            });
-
-            console.log('🚀 Scheduler aktif dan menjadwalkan semua task dari DB!');
-        } catch (error) {
-            console.error('❌ Gagal ambil data jadwal dari DB:', error);
+                this.scheduled.set(s.id, task);
+                console.log(`➕ [${s.id}] Jadwal baru didaftarkan (${s.cron_expression} — ${s.type})`);
+            }
         }
+
+        // Stop and remove schedules that are no longer active
+        for (const [id, task] of this.scheduled) {
+            if (!activeIds.has(id)) {
+                task.stop();
+                this.scheduled.delete(id);
+                console.log(`➖ [${id}] Jadwal dihentikan karena tidak aktif lagi`);
+            }
+        }
+    }
+
+    // Start the scheduler: initial load, then polling every minute
+    async start() {
+        await this.loadAndSchedule();
+
+        // Poll every minute to pick up DB changes
+        cron.schedule('* * * * *', () => {
+            this.loadAndSchedule().catch(err => {
+                console.error('❌ Error saat polling jadwal:', err);
+            });
+        });
+
+        console.log('🚀 Scheduler aktif dengan polling setiap menit');
     }
 }
 

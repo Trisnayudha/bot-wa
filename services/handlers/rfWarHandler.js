@@ -41,9 +41,9 @@ class RfWarHandler {
         if (win_race === 'Accretia') {
             actionPhrase = 'Ambil kesempatan untuk take HR lagi dan tunjukkan dominasi Accretia di medan perang!';
         } else if (chip_a === 0) {
-            actionPhrase = 'Bangkit dan menangkan WAR malam ini demi membalikkan keadaan!';
+            actionPhrase = 'Bangkit dan menangkan WAR ini demi membalikkan keadaan!';
         } else {
-            actionPhrase = 'Kesempatan masih terbuka untuk menangkan WAR malam ini, jangan sampai Bellato atau Cora mendominasi!';
+            actionPhrase = 'Kesempatan masih terbuka untuk menangkan WAR ini, jangan sampai Bellato atau Cora mendominasi!';
         }
 
         const dataSummary = `
