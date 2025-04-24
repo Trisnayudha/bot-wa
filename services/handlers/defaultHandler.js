@@ -1,3 +1,7 @@
+// services/handlers/defaultHandler.js
+
+const DeepSeekService = require('../../openai/openaiService');
+
 class DefaultHandler {
     constructor(client, schedule) {
         this.client = client;
@@ -6,26 +10,35 @@ class DefaultHandler {
 
     async handle() {
         try {
-            const message = this.schedule.message;
+            let message;
 
-            if (!message) {
-                console.warn(`❗ Jadwal ID ${this.schedule.id} tidak punya message statis.`);
+            if (this.schedule.use_ai && this.schedule.ai_prompt) {
+                console.log(`🤖 Generate AI message untuk jadwal ID ${this.schedule.id}`);
+                // Generate dari AI pakai ai_prompt (sama seperti PersonalHandler)
+                message = await DeepSeekService.generateScheduleMessage(this.schedule.ai_prompt);
+            } else if (this.schedule.message) {
+                console.log(`📨 Menggunakan pesan statis untuk jadwal ID ${this.schedule.id}`);
+                message = this.schedule.message;
+            } else {
+                console.warn(`❗ Jadwal ID ${this.schedule.id} tidak punya ai_prompt maupun message.`);
                 return;
             }
 
             const chat = await this.client.getChatById(this.schedule.chat_id);
 
             if (this.schedule.chat_id.endsWith('@g.us')) {
+                // Group: mention semua peserta
                 const mentions = chat.participants.map(p => p.id._serialized);
                 await chat.sendMessage(message, { mentions });
-                console.log(`📨 Pesan statis (group) terkirim ke ${chat.id._serialized}`);
+                console.log(`✅ Pesan group terkirim ke ${chat.id._serialized}`);
             } else {
+                // Personal chat
                 await this.client.sendMessage(chat.id._serialized, message);
-                console.log(`📨 Pesan statis (personal) terkirim ke ${chat.id._serialized}`);
+                console.log(`✅ Pesan personal terkirim ke ${chat.id._serialized}`);
             }
 
         } catch (error) {
-            console.error(`❌ Error kirim pesan statis jadwal ID ${this.schedule.id}:`, error);
+            console.error(`❌ Error di DefaultHandler ID ${this.schedule.id}:`, error);
         }
     }
 }
