@@ -19,7 +19,7 @@ class RfWarHandler {
                 args: isProduction ? ['--no-sandbox', '--disable-setuid-sandbox'] : [] // Auto switch sandbox
             });
             const page = await browser.newPage();
-            await page.goto('https://universe.gamecp.net/web_api/?do=satu', { waitUntil: 'domcontentloaded' });
+            await page.goto('https://kairos.gamecp.net/web_api/?do=satu', { waitUntil: 'domcontentloaded' });
 
             const content = await page.evaluate(() => {
                 const preTag = document.querySelector('pre');
@@ -38,12 +38,12 @@ class RfWarHandler {
         const { status_game, online_field, chip_a, chip_b, chip_c, win_race, lose_race } = serverStatus;
 
         let actionPhrase = '';
-        if (win_race === 'Accretia') {
-            actionPhrase = 'Ambil kesempatan untuk take HR lagi dan tunjukkan dominasi Accretia di medan perang!';
-        } else if (chip_a === 0) {
+        if (win_race === 'Bellato') {
+            actionPhrase = 'Ambil kesempatan untuk take HR lagi dan tunjukkan dominasi Bellato di medan perang!';
+        } else if (chip_b === 0) {
             actionPhrase = 'Bangkit dan menangkan WAR ini demi membalikkan keadaan!';
         } else {
-            actionPhrase = 'Kesempatan masih terbuka untuk menangkan WAR ini, jangan sampai Bellato atau Cora mendominasi!';
+            actionPhrase = 'Kesempatan masih terbuka untuk menangkan WAR ini, jangan sampai Accretia atau Cora mendominasi!';
         }
 
         const dataSummary = `
