@@ -124,11 +124,11 @@ Berikut adalah perintah yang tersedia:
     async handleMenu(message) {
         const menuText = `
 📋 *DAFTAR MENU BOT GUILD* 📋
-    
+        
 Berikut adalah command yang bisa kamu gunakan di grup:
     
 🔹 *.hidetag <pesan>*  
-_➤ Mention semua member tanpa terlihat_  
+ _➤ Mention semua member tanpa terlihat_  
 Contoh: *.hidetag Jangan lupa war jam 8 malam ya!*
     
 🔹 *.setdiscord <link>*  
@@ -139,7 +139,7 @@ Contoh: *.setdiscord https://discord.gg/abc123*
 _➤ Tampilkan link Discord yang tersimpan_
     
 🔹 *.menu*  
-_➤ Menampilkan daftar semua perintah yang tersedia_
+ _➤ Menampilkan daftar semua perintah yang tersedia_
     
 🔹 *claim*  
 _➤ Klaim GPACK hadiah guild_
@@ -158,18 +158,23 @@ Contoh: *.ai buatkan saya gambar naga terbang di langit*
 ⚠️ *Batas: Maks. 3 gambar per hari per grup*
     
 🔹 *.statuschip*  
-_➤ Melihat status server saat ini_  
-⚙️ *Coming Soon (maintenance)*
+_➤ Melihat status server saat ini_
     
-🔹 *.updatelog*  
-_➤ Melihat update terbaru setelah maintenance_  
-⚙️ *Coming Soon (maintenance)*
+🔹 *.onserver*  
+_➤ Aktifkan pemantauan otomatis status RF Kairos tiap 30 detik_
+    
+🔹 *.offserver*  
+_➤ Nonaktifkan pemantauan status RF Kairos_
+    
+🔹 *.updatelogs*  
+_➤ Menampilkan update log terbaru dari RF Kairos_
     
 💡 Catatan:
 Semua command ini hanya berfungsi jika digunakan di grup yang terdaftar.
         `;
         await message.reply(menuText);
     }
+
 
 
 

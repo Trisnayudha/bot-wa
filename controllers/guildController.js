@@ -294,6 +294,131 @@ async function handleStatusChip(message) {
     }
 }
 
+let lastKnownStatus = null;
+let isMonitoringStarted = false;
+let intervalRef = null;
+
+
+function startGameStatusMonitor(client) {
+    if (isMonitoringStarted) return;
+    isMonitoringStarted = true;
+
+    intervalRef = setInterval(async () => {
+        let browser;
+        try {
+            browser = await puppeteer.launch({
+                headless: true,
+                args: ['--no-sandbox', '--disable-setuid-sandbox']
+            });
+
+            const page = await browser.newPage();
+            await page.goto('https://kairos.gamecp.net/web_api/?do=satu', {
+                waitUntil: 'domcontentloaded',
+                timeout: 15000
+            });
+
+            const content = await page.evaluate(() => {
+                const preTag = document.querySelector('pre');
+                return preTag ? preTag.innerText : null;
+            });
+
+            await browser.close();
+
+            if (!content) return;
+
+            const data = JSON.parse(content);
+            const status = data?.result?.status_game;
+            if (!status) return;
+
+            if (status !== lastKnownStatus) {
+                lastKnownStatus = status;
+
+                const timeNow = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+                let message;
+
+                if (status === 'ONLINE') {
+                    message = `⚔️ *RF Kairos sudah UP!*\n\n🔥 Server siap tempur. Ajak tim, login, dan langsung GAS WAR!\n\n🕒 ${timeNow}`;
+                } else if (status === 'OFFLINE') {
+                    message = `🔧 *RF Kairos sedang DOWN*\n\nServer dalam kondisi mati/maintenance.\nCek berkala untuk update selanjutnya.\n\n🕒 ${timeNow}`;
+                } else {
+                    message = `📡 *Status RF Kairos berubah*\nStatus sekarang: *${status}*\n\n🕒 ${timeNow}`;
+                }
+
+                const targetNumber = '120363042863310424@g.us';
+                const chat = await client.getChatById(targetNumber);
+                await chat.sendMessage(message);
+
+                console.log(`[RF STATUS MONITOR] Kirim notifikasi status: ${status}`);
+            }
+
+        } catch (err) {
+            console.error('[RF MONITOR ERROR]:', err.message);
+            if (browser) await browser.close();
+        }
+    }, 30 * 1000);
+}
+
+async function stopGameStatusMonitor(message) {
+    if (!isMonitoringStarted || !intervalRef) {
+        await message.reply('🔕 Monitor belum aktif.');
+        return;
+    }
+
+    clearInterval(intervalRef);
+    intervalRef = null;
+    isMonitoringStarted = false;
+    lastKnownStatus = null;
+
+    await message.reply('🛑 Monitor RF Kairos telah *dimatikan*.');
+}
+
+async function handleUpdateLogs(message) {
+    let browser;
+
+    try {
+        browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox']
+        });
+
+        const page = await browser.newPage();
+        await page.goto('https://www.rfkairos.com/update-logs/', {
+            waitUntil: 'domcontentloaded',
+            timeout: 20000
+        });
+
+        const updateList = await page.evaluate(() => {
+            const timeline = document.querySelector('ul.timeline-with-icons');
+            if (!timeline) return [];
+
+            const firstItem = timeline.querySelector('li');
+            if (!firstItem) return [];
+
+            const nestedUl = firstItem.querySelector('ul');
+            if (!nestedUl) return [];
+
+            const items = nestedUl.querySelectorAll('li');
+            return Array.from(items).map(li => li.innerText.trim());
+        });
+
+        await browser.close();
+
+        if (updateList.length === 0) {
+            await message.reply('⚠️ Tidak ditemukan data update log terbaru.');
+            return;
+        }
+
+        const replyText = `📋 *Update Log Terbaru RF Kairos*\n\n${updateList.map((line, idx) => `${idx + 1}. ${line}`).join('\n')}`;
+        await message.reply(replyText);
+
+    } catch (err) {
+        console.error('[SCRAPER ERROR - UpdateLogs]:', err.message);
+        if (browser) await browser.close();
+        await message.reply('❌ Gagal mengambil data update log. Coba lagi nanti.');
+    }
+}
+
+
 module.exports = {
     handleGroupJoin,
     handleClaim,
@@ -301,5 +426,8 @@ module.exports = {
     handleNick,
     handleDiscord,
     handleStatusChip,
-    setDiscordLink
+    setDiscordLink,
+    startGameStatusMonitor,
+    stopGameStatusMonitor,
+    handleUpdateLogs
 };

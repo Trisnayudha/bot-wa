@@ -18,10 +18,12 @@ client.on('qr', (qr) => {
 
 client.on('ready', () => {
     console.log('WhatsApp bot sudah siap!');
+    const scheduler = new SchedulerService(client);
+    scheduler.start();
 
-    const scheduler = new SchedulerService(client);  // Init service
-    scheduler.start();  // Start scheduler
+    messageRoutes.setClient(client); // ⬅️ Tambahkan ini
 });
+
 
 client.on('message', async (message) => {
     await messageRoutes.routeMessage(message);

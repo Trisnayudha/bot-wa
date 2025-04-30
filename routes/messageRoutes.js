@@ -6,6 +6,10 @@ const { MessageMedia } = require('whatsapp-web.js');
 const axios = require('axios');
 
 class MessageRoutes {
+    setClient(clientInstance) {
+        this.client = clientInstance;
+    }
+
     async routeMessage(message) {
         const chat = await message.getChat();
         const msg = message.body;
@@ -31,6 +35,25 @@ class MessageRoutes {
                 await guildController.handleStatusChip(message);
                 return;
             }
+
+            // ===== HIDUPKAN MONITOR SERVER RF KAIROS =====
+            if (lowerMsg === '.onserver') {
+                guildController.startGameStatusMonitor(this.client);
+                await message.reply('✅ Monitor Server RF Kairos *sudah diaktifkan*.');
+                return;
+            }
+
+            if (lowerMsg === '.offserver') {
+                await guildController.stopGameStatusMonitor(message);
+                return;
+            }
+
+            if (lowerMsg === '.updatelogs') {
+                await guildController.handleUpdateLogs(message);
+                return;
+            }
+
+
         }
 
         // ===== MENANGANI PERINTAH .SETDISCORD <link> =====
