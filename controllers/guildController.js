@@ -239,7 +239,7 @@ async function handleStatusChip(message) {
         });
 
         const page = await browser.newPage();
-        await page.goto('https://kairos.gamecp.net/web_api/?do=satu', { waitUntil: 'domcontentloaded' });
+        await page.goto('https://epic.gamecp.net/web_api/?do=satu', { waitUntil: 'domcontentloaded' });
 
         const content = await page.evaluate(() => {
             const preTag = document.querySelector('pre');
@@ -312,7 +312,7 @@ function startGameStatusMonitor(client) {
             });
 
             const page = await browser.newPage();
-            await page.goto('https://kairos.gamecp.net/web_api/?do=satu', {
+            await page.goto('https://epic.gamecp.net/web_api/?do=satu', {
                 waitUntil: 'domcontentloaded',
                 timeout: 15000
             });
@@ -337,11 +337,11 @@ function startGameStatusMonitor(client) {
                 let message;
 
                 if (status === 'ONLINE') {
-                    message = `⚔️ *RF Kairos sudah UP!*\n\n🔥 Server siap tempur. Ajak tim, login, dan langsung GAS WAR!\n\n🕒 ${timeNow}`;
+                    message = `⚔️ *RF EPIC PVP sudah UP!*\n\n🔥 Server siap tempur. Ajak tim, login, dan langsung GAS WAR!\n\n🕒 ${timeNow}`;
                 } else if (status === 'OFFLINE') {
-                    message = `🔧 *RF Kairos sedang DOWN*\n\nServer dalam kondisi mati/maintenance.\nCek berkala untuk update selanjutnya.\n\n🕒 ${timeNow}`;
+                    message = `🔧 *RF EPIC PVP sedang DOWN*\n\nServer dalam kondisi mati/maintenance.\nCek berkala untuk update selanjutnya.\n\n🕒 ${timeNow}`;
                 } else {
-                    message = `📡 *Status RF Kairos berubah*\nStatus sekarang: *${status}*\n\n🕒 ${timeNow}`;
+                    message = `📡 *Status RF EPIC PVP berubah*\nStatus sekarang: *${status}*\n\n🕒 ${timeNow}`;
                 }
 
                 const targetNumber = '120363042863310424@g.us';
@@ -369,7 +369,7 @@ async function stopGameStatusMonitor(message) {
     isMonitoringStarted = false;
     lastKnownStatus = null;
 
-    await message.reply('🛑 Monitor RF Kairos telah *dimatikan*.');
+    await message.reply('🛑 Monitor RF EPIC PVP telah *dimatikan*.');
 }
 
 async function handleUpdateLogs(message) {
@@ -382,7 +382,7 @@ async function handleUpdateLogs(message) {
         });
 
         const page = await browser.newPage();
-        await page.goto('https://www.rfkairos.com/update-logs/', {
+        await page.goto('https://www.epicfullpvp.com/update-logs/', {
             waitUntil: 'domcontentloaded',
             timeout: 20000
         });
@@ -408,7 +408,7 @@ async function handleUpdateLogs(message) {
             return;
         }
 
-        const replyText = `📋 *Update Log Terbaru RF Kairos*\n\n${updateList.map((line, idx) => `${idx + 1}. ${line}`).join('\n')}`;
+        const replyText = `📋 *Update Log Terbaru RF EPIC PVP*\n\n${updateList.map((line, idx) => `${idx + 1}. ${line}`).join('\n')}`;
         await message.reply(replyText);
 
     } catch (err) {
