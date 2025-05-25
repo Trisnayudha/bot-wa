@@ -147,20 +147,16 @@ async function handleClaim(message) {
     }
 
 
-    const response = `Nick: 
-Race: Bells
-2 PCS Ancient Weapon : 
-1 Set Ancient Armor : 
-1 Set Ancient Elemental : 
-Mask Divine : 
-Booster Divine : 
-1 PCS Ancient Booster : 
-1 PCS Ancient Shield : 
-1 PCS Ancient Mask : 
-1 PCS Leon Weapon :
-1 PCS Jade Level Permanent
-Mask Divine :  
-Booster Divine :`;
+    const response = `MEDIUM PACKAGE
+Nick :
+1Pcs - Iridium Weapon+7 : 
+1Pcs - Iridium Armor+7 : 
+1Pcs - Iridium Booster+7 : 
+1Pcs - Iridium Scream Mask+7 : 
+1Pcs - Epic Weapon+7 : 
+4Pcs - Epic Elemental : 
+1Pcs - Epic Shield+7 / Sub Shield
+1Pcs - Leon Low Knife / Bow Lv.40`;
 
     await message.reply(response);
 }
