@@ -39,11 +39,11 @@ class RfWarHandler {
 
         let actionPhrase = '';
         if (win_race === 'Cora') {
-            actionPhrase = 'Ambil kesempatan untuk take HR lagi dan tunjukkan dominasi Bellato di medan perang!';
+            actionPhrase = 'Ambil kesempatan untuk take HR lagi dan tunjukkan dominasi Cora di medan perang!';
         } else if (chip_c === 0) {
             actionPhrase = 'Bangkit dan menangkan WAR ini demi membalikkan keadaan!';
         } else {
-            actionPhrase = 'Kesempatan masih terbuka untuk menangkan WAR ini, jangan sampai Accretia atau Cora mendominasi!';
+            actionPhrase = 'Kesempatan masih terbuka untuk menangkan WAR ini, jangan sampai Accretia atau Belato mendominasi!';
         }
 
         const dataSummary = `
