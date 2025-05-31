@@ -36,7 +36,7 @@ class MessageRoutes {
                 return;
             }
 
-            // ===== HIDUPKAN MONITOR SERVER RF KAIROS =====
+            // ===== HIDUPKAN MONITOR SERVER RF EPIC =====
             if (lowerMsg === '.onserver') {
                 guildController.startGameStatusMonitor(this.client);
                 await message.reply('✅ Monitor Server RF EPIC *sudah diaktifkan*.');

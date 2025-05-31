@@ -161,13 +161,13 @@ Contoh: *.ai buatkan saya gambar naga terbang di langit*
 _➤ Melihat status server saat ini_
     
 🔹 *.onserver*  
-_➤ Aktifkan pemantauan otomatis status RF Kairos tiap 30 detik_
+_➤ Aktifkan pemantauan otomatis status RF EPIC tiap 30 detik_
     
 🔹 *.offserver*  
-_➤ Nonaktifkan pemantauan status RF Kairos_
+_➤ Nonaktifkan pemantauan status RF EPIC_
     
 🔹 *.updatelogs*  
-_➤ Menampilkan update log terbaru dari RF Kairos_
+_➤ Menampilkan update log terbaru dari RF EPIC_
     
 💡 Catatan:
 Semua command ini hanya berfungsi jika digunakan di grup yang terdaftar.

@@ -64,6 +64,64 @@ class MonitorService {
         this.hasInitialized = false;
     }
 
+    // Helper: Get next PB RANDOM spawn (hourly at minute 56 second 20)
+    _getNextRandomSpawn(baseTime = new Date()) {
+        const next = new Date(baseTime);
+        next.setMinutes(56, 20, 0);
+        if (next <= baseTime) {
+            next.setHours(next.getHours() + 1);
+        }
+        return next;
+    }
+
+    // Helper: Get next BELPE spawn (odd hour at minute 15 second 4)
+    _getNextBelpeSpawn(baseTime = new Date()) {
+        const now = new Date(baseTime);
+        const hour = now.getHours();
+        const minute = now.getMinutes();
+        const second = now.getSeconds();
+        const isOdd = (num) => num % 2 === 1;
+        let next;
+        if (isOdd(hour) && (minute < 15 || (minute === 15 && second < 4))) {
+            next = new Date(now);
+            next.setHours(hour, 15, 4, 0);
+        } else {
+            const nextOdd = isOdd(hour) ? hour + 2 : hour + 1;
+            next = new Date(now);
+            next.setHours(nextOdd, 15, 4, 0);
+        }
+        return next;
+    }
+
+    // Helper: Format Date to ID locale string
+    _formatDate(date) {
+        return date.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+    }
+
+    // Helper: Schedule a 30-minute prior reminder for a boss
+    _scheduleReminder(mapCode, bossName, nextSpawn) {
+        const reminderTime = new Date(nextSpawn.getTime() - 30 * 60000);
+        const now = new Date();
+        if (reminderTime <= now) {
+            // If already past, do not schedule
+            return;
+        }
+        const delay = reminderTime.getTime() - now.getTime();
+        setTimeout(() => {
+            const humanMap = {
+                resources: 'Craig Mine',
+                sette: 'Sette',
+                neutralc: 'Cora HQ',
+                neutralcs1: 'Haram',
+                neutralcs2: 'Numerus',
+                cauldron01: 'Volcanic Cauldron',
+                elan: 'Elan'
+            }[mapCode] || mapCode;
+            const text = `⏰ *Reminder*: Pit Boss *${bossName}* di *${humanMap}* akan spawn pada *${this._formatDate(nextSpawn)}* (30 menit lagi)`;
+            this.client.sendMessage(this.groupChatId, text);
+        }, delay);
+    }
+
     async start() {
         if (this.hasInitialized) return;
         this.hasInitialized = true;
@@ -158,6 +216,9 @@ class MonitorService {
         const data = payload.result || {};
         const now = new Date();
 
+        // Collect all updates in this cycle
+        const updates = [];
+
         for (const mapCode of this.mapsToMonitor) {
             const mapObj = data[mapCode];
             if (!mapObj?.boss) continue;
@@ -168,35 +229,103 @@ class MonitorService {
 
                 const prev = await dbModel.getPitbossState(mapCode, bossName);
                 if (!prev) {
-                    // Jika belum ada record di state → insert lalu lanjut
                     await dbModel.insertPitbossState(mapCode, bossName, newStatus, now);
                     continue;
                 }
 
                 const oldStatus = prev.last_status;
                 if (oldStatus !== newStatus) {
-                    // 1) Insert log
-                    await dbModel.insertPitbossLog(
+                    // Record update for messaging
+                    const update = {
                         mapCode,
                         bossName,
                         oldStatus,
                         newStatus,
-                        now
-                    );
+                        lastDead: boss.last_dead_string,
+                        nextSpawn: null
+                    };
+
+                    // If going from ALIVE -> DEAD, compute next spawn
+                    if (oldStatus === 'ALIVE' && newStatus === 'DEAD') {
+                        if (mapCode === 'cauldron01' && bossName.includes('Belphegor')) {
+                            update.nextSpawn = this._getNextBelpeSpawn(now);
+                        } else if (mapCode.startsWith('neutral')) {
+                            update.nextSpawn = this._getNextRandomSpawn(now);
+                        }
+                        // Add other mapCode cases here if needed
+                    }
+
+                    updates.push(update);
+
+                    // 1) Insert log
+                    await dbModel.insertPitbossLog(mapCode, bossName, oldStatus, newStatus, now);
                     // 2) Update state
                     await dbModel.updatePitbossState(mapCode, bossName, newStatus, now);
-                    // 3) Kirim notifikasi WA
-                    const text = this._buildNotificationText(
-                        mapCode,
-                        bossName,
-                        oldStatus,
-                        newStatus,
-                        boss.last_dead_string
-                    );
-                    await this.client.sendMessage(this.groupChatId, text);
-                    console.log(`MonitorService: [${mapCode}/${bossName}] ${oldStatus}→${newStatus}`);
                 }
             }
+        }
+
+        // If there are any updates, send a single combined message
+        if (updates.length > 0) {
+            const mapNames = {
+                resources: 'Craig Mine',
+                sette: 'Sette',
+                neutralc: 'Cora HQ',
+                neutralcs1: 'Haram',
+                neutralcs2: 'Numerus',
+                neutralas1: 'Armory 213',
+                neutralas2: 'Armory 117',
+                neutrala: 'Accretia HQ',
+                neutralb: 'Bellato HQ',
+                neutralbs1: 'Solus',
+                neutralbs2: 'Anacaade',
+                cauldron01: 'Volcanic Cauldron',
+                dungeon03: 'Dimension',
+                elan: 'Elan',
+                exile_land: 'Outcast Land',
+                medicallab: 'Cartella Lab (1)',
+                medicallab2: 'Cartella Lab (2)',
+                mountain_beast: 'Mountain Beast',
+                platform01: 'Ether'
+            };
+
+            // Separate updates into spawned vs died
+            const spawnList = [];
+            const diedList = [];
+            for (const u of updates) {
+                if (u.oldStatus === 'DEAD' && u.newStatus === 'ALIVE') {
+                    spawnList.push(u);
+                } else if (u.oldStatus === 'ALIVE' && u.newStatus === 'DEAD') {
+                    diedList.push(u);
+                }
+            }
+
+            let messageLines = [];
+
+            // Part 1: Spawned
+            if (spawnList.length > 0) {
+                messageLines.push('🟢 *Pit Boss Spawned:*');
+                for (const u of spawnList) {
+                    const humanMap = mapNames[u.mapCode] || u.mapCode;
+                    messageLines.push(`• ${humanMap} ‒ ${u.bossName}`);
+                }
+                messageLines.push(''); // separator
+            }
+
+            // Part 2: Died (with Next Spawn)
+            if (diedList.length > 0) {
+                messageLines.push('🔴 *Pit Boss Died (Next Spawn):*');
+                for (const u of diedList) {
+                    const humanMap = mapNames[u.mapCode] || u.mapCode;
+                    const nextSpawnStr = u.nextSpawn
+                        ? u.nextSpawn.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })
+                        : '-';
+                    messageLines.push(`• ${humanMap} ‒ ${u.bossName}  → ${nextSpawnStr}`);
+                }
+            }
+
+            const finalMessage = messageLines.join('\n');
+            await this.client.sendMessage(this.groupChatId, finalMessage);
         }
     }
 
@@ -344,6 +473,34 @@ class MonitorService {
 `;
 
         await this.client.sendMessage(this.groupChatId, message);
+
+        // Schedule 30-minute reminders for each dynamic boss currently DEAD
+        // Fetch all pitboss states from DB
+        const allStates = await dbModel.getAllPitbossStates();
+        const now2 = new Date();
+        for (const state of allStates) {
+            const { map_code: mapCode, boss_name: bossName, last_status: status, last_checked: lastChecked } = state;
+            if (status !== 'DEAD') continue;
+
+            let nextSpawn = null;
+            const lastDeadTime = new Date(lastChecked);
+
+            // Dynamic category: PB RANDOM (neutral maps)
+            if (mapCode.startsWith('neutral')) {
+                nextSpawn = this._getNextRandomSpawn(lastDeadTime);
+            }
+            // Dynamic category: BELPE (Belphegor in cauldron01)
+            else if (mapCode === 'cauldron01' && bossName.includes('Belphegor')) {
+                nextSpawn = this._getNextBelpeSpawn(lastDeadTime);
+            }
+            // Add other dynamic categories as needed
+
+            if (nextSpawn) {
+                // Schedule the 30-minute reminder
+                this._scheduleReminder(mapCode, bossName, nextSpawn);
+            }
+        }
+        return;
     }
 
     // Validate PB RANDOM spawn status at predicted time
