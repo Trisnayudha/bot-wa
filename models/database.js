@@ -18,7 +18,7 @@ class Database {
         return this.db('payment')
             .sum('event_price as total')
             .where('events_id', 13)
-            .andWhere('payment.status','Paid Off')
+            .andWhere('payment.status', 'Paid Off')
             .first();
     }
 
@@ -26,10 +26,50 @@ class Database {
         return this.db('payment')
             .select(this.db.raw("DATE_FORMAT(created_at, '%Y-%m') as month"))
             .sum('event_price as total')
-            .where('events_id',13)
-            .andWhere('payment.status','Paid Off')
+            .where('events_id', 13)
+            .andWhere('payment.status', 'Paid Off')
             .groupBy('month')
             .orderBy('month', 'asc');
+    }
+
+    // === Pitboss State & Log methods ===
+    async getAllPitbossStates() {
+        return this.db('pitboss_state').select('*');
+    }
+
+    async getPitbossState(mapCode, bossName) {
+        return this.db('pitboss_state')
+            .select('last_status', 'last_checked')
+            .where({ map_code: mapCode, boss_name: bossName })
+            .first();
+    }
+
+    async insertPitbossState(mapCode, bossName, status, timestamp) {
+        return this.db('pitboss_state').insert({
+            map_code: mapCode,
+            boss_name: bossName,
+            last_status: status,
+            last_checked: timestamp
+        });
+    }
+
+    async updatePitbossState(mapCode, bossName, newStatus, timestamp) {
+        return this.db('pitboss_state')
+            .where({ map_code: mapCode, boss_name: bossName })
+            .update({
+                last_status: newStatus,
+                last_checked: timestamp
+            });
+    }
+
+    async insertPitbossLog(mapCode, bossName, oldStatus, newStatus, timestamp) {
+        return this.db('pitboss_log').insert({
+            map_code: mapCode,
+            boss_name: bossName,
+            old_status: oldStatus,
+            new_status: newStatus,
+            changed_at: timestamp
+        });
     }
 }
 

@@ -1,5 +1,4 @@
-// schedulerService.js
-
+// services/schedulerService.js
 const cron = require('node-cron');
 const mysql = require('mysql2/promise');
 const RfWarHandler = require('./handlers/rfWarHandler');
@@ -7,6 +6,8 @@ const DailyReminderHandler = require('./handlers/dailyReminderHandler');
 const PersonalHandler = require('./handlers/personalHandler');
 const DefaultHandler = require('./handlers/defaultHandler');
 require('dotenv').config();
+
+const MonitorService = require('./handlers/monitorService'); // <<< Tambahan
 
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
@@ -109,6 +110,24 @@ class SchedulerService {
         });
 
         console.log('🚀 Scheduler aktif dengan polling setiap menit');
+
+        // -------------------------------------------------------
+        // Setelah scheduler aktif, inisialisasi MonitorService
+        // -------------------------------------------------------
+        const groupIdsEnv = process.env.WA_GROUP_IDS || '';
+        const groupIds = groupIdsEnv.split(',').map(s => s.trim()).filter(s => s.length > 0);
+
+        if (groupIds.length > 0) {
+            for (const gid of groupIds) {
+                // Buat instan MonitorService untuk setiap grup
+                const monitor = new MonitorService(this.client, gid);
+                monitor.start().catch(err => {
+                    console.error(`❌ MonitorService gagal dimulai untuk grup ${gid}:`, err);
+                });
+            }
+        } else {
+            console.warn('⚠️ WA_GROUP_IDS kosong. MonitorService tidak dijalankan.');
+        }
     }
 }
 
