@@ -36,6 +36,19 @@ class MessageRoutes {
                 return;
             }
 
+            if (lowerMsg === '.pb') {
+                try {
+                    // Ambil string prediksi dari guildController
+                    const predictionText = await guildController.getSpawnPredictions();
+                    // Kirim sebagai reply
+                    await message.reply(predictionText);
+                } catch (err) {
+                    console.error('Error saat generate spawn predictions:', err);
+                    await message.reply('❌ Gagal mengambil prediksi spawn. Coba lagi nanti.');
+                }
+                return;
+            }
+
             // ===== HIDUPKAN MONITOR SERVER RF EPIC =====
             if (lowerMsg === '.onserver') {
                 guildController.startGameStatusMonitor(this.client);

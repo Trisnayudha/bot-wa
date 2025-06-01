@@ -414,6 +414,133 @@ async function handleUpdateLogs(message) {
     }
 }
 
+async function getSpawnPredictions() {
+    const now = new Date();
+    const formatDate = (date) => date.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+
+    // Fetch all pitboss states from DB
+    const allStates = await pool.query('SELECT map_code, boss_name, last_status, last_checked FROM pitboss_state')
+        .then(([rows]) => rows);
+
+    // Helper spawn calculators (reuse existing logic)
+    const computeNextMassalSpawn = (baseTime) => {
+        const massalHours = [2, 6, 10, 14, 18, 22];
+        let nextMassal;
+        for (const h of massalHours) {
+            const cand = new Date(baseTime);
+            cand.setHours(h, 31, 47, 0);
+            if (cand > baseTime) {
+                nextMassal = cand;
+                break;
+            }
+        }
+        if (!nextMassal) {
+            nextMassal = new Date(baseTime);
+            nextMassal.setDate(baseTime.getDate() + 1);
+            nextMassal.setHours(massalHours[0], 31, 47, 0);
+        }
+        return nextMassal;
+    };
+    const computeNextRandomSpawn = (lastDead) => {
+        const next = new Date(lastDead);
+        next.setMinutes(56, 20, 0);
+        if (next <= lastDead) next.setHours(next.getHours() + 1);
+        return next;
+    };
+    const computeNextBelpeSpawn = (lastDead) => {
+        const isOdd = (n) => n % 2 === 1;
+        const nowBD = new Date(lastDead);
+        const h = nowBD.getHours(), m = nowBD.getMinutes(), s = nowBD.getSeconds();
+        let next;
+        if (isOdd(h) && (m < 15 || (m === 15 && s < 4))) {
+            next = new Date(nowBD);
+            next.setHours(h, 15, 4, 0);
+        } else {
+            const nextOdd = isOdd(h) ? h + 2 : h + 1;
+            next = new Date(nowBD);
+            next.setHours(nextOdd, 15, 4, 0);
+        }
+        return next;
+    };
+    const computeNextUrsaSpawn = (lastDead) => {
+        const isOdd = (n) => n % 2 === 1;
+        const nowUD = new Date(lastDead);
+        const h = nowUD.getHours(), m = nowUD.getMinutes(), s = nowUD.getSeconds();
+        let next;
+        if (isOdd(h) && (m < 36 || (m === 36 && s < 15))) {
+            next = new Date(nowUD);
+            next.setHours(h, 36, 15, 0);
+        } else {
+            const nextOdd = isOdd(h) ? h + 2 : h + 1;
+            next = new Date(nowUD);
+            next.setHours(nextOdd, 36, 15, 0);
+        }
+        return next;
+    };
+    const computeNextElanSpawn = (baseTime) => {
+        const next = new Date(baseTime);
+        next.setHours(20, 15, 0, 0);
+        if (next <= baseTime) next.setDate(next.getDate() + 1);
+        return next;
+    };
+    const computeNext3dSpawn = (baseTime) => {
+        const next = new Date(baseTime);
+        next.setHours(20, 30, 0, 0);
+        if (next <= baseTime) next.setDate(next.getDate() + 1);
+        return next;
+    };
+
+    const lines = [];
+    lines.push('⏰ *Prediksi Spawn Pit Boss*');
+    lines.push('');
+
+    // Build dynamic categories from database entries
+    const mapGroups = {};
+    for (const state of allStates) {
+        if (!mapGroups[state.map_code]) {
+            mapGroups[state.map_code] = [];
+        }
+        mapGroups[state.map_code].push(state);
+    }
+
+    for (const [mapCode, stateList] of Object.entries(mapGroups)) {
+        const displayName = mapCode.toUpperCase();
+        lines.push(`🔹 *${displayName}*`);
+
+        for (const state of stateList) {
+            const bossName = state.boss_name;
+            const status = state.last_status;
+            const lastDead = new Date(state.last_checked);
+
+            if (status === 'ALIVE') {
+                lines.push(`- 🔥 ${bossName} (ALIVE)`);
+                lines.push(`  • Last Dead: ${formatDate(lastDead)}`);
+            } else if (status === 'DEAD') {
+                lines.push(`- 💀 ${bossName} (DEAD)`);
+                // Compute nextSpawn based on map category
+                let nextSpawn = null;
+                if (mapCode === 'massal') {
+                    nextSpawn = computeNextMassalSpawn(lastDead);
+                } else if (mapCode.startsWith('neutral')) {
+                    nextSpawn = computeNextRandomSpawn(lastDead);
+                } else if (mapCode === 'cauldron01') {
+                    nextSpawn = computeNextBelpeSpawn(lastDead);
+                } else if (mapCode === 'elan') {
+                    nextSpawn = computeNextElanSpawn(new Date());
+                }
+                // Add other mapCode conditions if needed
+
+                if (nextSpawn) {
+                    lines.push(`  • Predict Spawn: ${formatDate(nextSpawn)}`);
+                }
+            }
+            lines.push('');
+        }
+    }
+
+    return lines.join('\n');
+}
+
 
 module.exports = {
     handleGroupJoin,
@@ -425,5 +552,6 @@ module.exports = {
     setDiscordLink,
     startGameStatusMonitor,
     stopGameStatusMonitor,
-    handleUpdateLogs
+    handleUpdateLogs,
+    getSpawnPredictions
 };

@@ -38,7 +38,6 @@ class MonitorService {
         this.pollInterval = '*/1 * * * *'; // polling tiap menit
         this.mapsToMonitor = [
             'resources',
-            'sette',
             'neutralc',
             'neutralcs1',
             'neutralcs2',
@@ -47,7 +46,6 @@ class MonitorService {
         this.bossesToInitialize = {
             neutralcs2: ['Twizer Rex', 'Great Lava', 'Heavy Anabola', 'Blood Vafer Rex'],
             resources: ['Earth Quaker'],
-            sette: ['Epic Lord'],
             neutralcs1: ['Rex Cannival', 'Blood King Twizer', 'Brutal Rex', 'Brath', 'RashVafer Luther'],
             elan: [
                 'Rock Jaw',
@@ -269,7 +267,6 @@ class MonitorService {
         if (updates.length > 0) {
             const mapNames = {
                 resources: 'Craig Mine',
-                sette: 'Sette',
                 neutralc: 'Cora HQ',
                 neutralcs1: 'Haram',
                 neutralcs2: 'Numerus',
@@ -304,7 +301,7 @@ class MonitorService {
 
             // Part 1: Spawned
             if (spawnList.length > 0) {
-                messageLines.push('🟢 *Pit Boss Spawned:*');
+                messageLines.push('🔥 *Pit Boss Spawned:*');
                 for (const u of spawnList) {
                     const humanMap = mapNames[u.mapCode] || u.mapCode;
                     messageLines.push(`• ${humanMap} ‒ ${u.bossName}`);
@@ -314,13 +311,15 @@ class MonitorService {
 
             // Part 2: Died (with Next Spawn)
             if (diedList.length > 0) {
-                messageLines.push('🔴 *Pit Boss Died (Next Spawn):*');
+                messageLines.push('💀 *Pit Boss Died (Next Spawn):*');
                 for (const u of diedList) {
                     const humanMap = mapNames[u.mapCode] || u.mapCode;
-                    const nextSpawnStr = u.nextSpawn
-                        ? u.nextSpawn.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' })
-                        : '-';
-                    messageLines.push(`• ${humanMap} ‒ ${u.bossName}  → ${nextSpawnStr}`);
+                    if (u.nextSpawn) {
+                        const nextSpawnStr = u.nextSpawn.toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
+                        messageLines.push(`• ${humanMap} ‒ ${u.bossName}  → ${nextSpawnStr}`);
+                    } else {
+                        messageLines.push(`• ${humanMap} ‒ ${u.bossName}`);
+                    }
                 }
             }
 
@@ -332,7 +331,6 @@ class MonitorService {
     _buildNotificationText(mapCode, bossName, oldStatus, newStatus, lastDead) {
         const mapNames = {
             resources: 'Craig Mine',
-            sette: 'Sette',
             neutralc: 'Cora HQ',
             neutralcs1: 'Haram',
             neutralcs2: 'Numerus'
@@ -461,9 +459,6 @@ class MonitorService {
 
 • BELPE:
   → ${formatDate(nextBelpe)}
-
-• URSA:
-  → ${formatDate(nextUrsa)}
 
 • PB ELAN:
   → ${formatDate(nextElan)}
