@@ -149,14 +149,14 @@ async function handleClaim(message) {
 
     const response = `MEDIUM PACKAGE
 Nick :
-1Pcs - Iridium Weapon+7 : 
-1Pcs - Iridium Armor+7 : 
-1Pcs - Iridium Booster+7 : 
-1Pcs - Iridium Scream Mask+7 : 
 1Pcs - Epic Weapon+7 : 
-4Pcs - Epic Elemental : 
+1Pcs - Iridium Weapon+7 : 
+1Pcs - Leon Low Knife / Bow Lv.40
+1Pcs - Iridium Armor+7 : 
+1Pcs - Iridium Scream Mask+7 : 
 1Pcs - Epic Shield+7 / Sub Shield
-1Pcs - Leon Low Knife / Bow Lv.40`;
+1Pcs - Iridium Booster+7 : 
+4Pcs - Epic Elemental :`;
 
     await message.reply(response);
 }
