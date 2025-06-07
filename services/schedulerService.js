@@ -5,7 +5,19 @@ const RfWarHandler = require('./handlers/rfWarHandler');
 const DailyReminderHandler = require('./handlers/dailyReminderHandler');
 const PersonalHandler = require('./handlers/personalHandler');
 const DefaultHandler = require('./handlers/defaultHandler');
+
 require('dotenv').config();
+
+const mainPool = mysql.createPool({
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT || 3306,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    waitForConnections: true,
+    connectionLimit: 10,
+    queueLimit: 0
+});
 
 const MonitorService = require('./handlers/monitorService'); // <<< Tambahan
 
@@ -68,7 +80,7 @@ class SchedulerService {
     async loadAndSchedule() {
         let schedules;
         try {
-            [schedules] = await pool.query(
+            [schedules] = await mainPool.query(
                 'SELECT * FROM schedules WHERE is_active = 1'
             );
         } catch (err) {
