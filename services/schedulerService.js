@@ -10,10 +10,11 @@ require('dotenv').config();
 const MonitorService = require('./handlers/monitorService'); // <<< Tambahan
 
 const pool = mysql.createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
+    host: process.env.DB_HOST_IM,
+    port: process.env.DB_PORT_IM || 3306,
+    user: process.env.DB_USERNAME_IM,
+    password: process.env.DB_PASSWORD_IM,
+    database: process.env.DB_DATABASE_IM,
     waitForConnections: true,
     connectionLimit: 10,
     queueLimit: 0
@@ -23,6 +24,44 @@ class SchedulerService {
     constructor(client) {
         this.client = client;
         this.scheduled = new Map();  // Map<scheduleId, cronTask>
+    }
+
+    // Menjadwalkan attendance summary setiap 5 menit untuk grup tertentu
+    async scheduleAttendanceSummary() {
+        const groupId = '6281932639000-1567995833@g.us';
+
+        cron.schedule('*/5 * * * *', async () => {
+            console.log(`📊 Menjalankan attendance summary untuk grup ${groupId}`);
+            const connection = await pool.getConnection();
+
+            try {
+                const [rows] = await connection.query(`
+                    SELECT et.title AS ticket_title, COUNT(ud.id) AS count
+                    FROM users_delegate ud
+                    JOIN events_tickets et ON ud.package_id = et.id
+                    WHERE ud.date_day1 IS NOT NULL
+                    GROUP BY et.title
+                `);
+
+                if (rows.length === 0) {
+                    await this.client.sendMessage(groupId, '*Attendance Summary*\nBelum ada peserta yang check-in hari ini.');
+                } else {
+                    let message = '*Attendance Summary (Day 1)*\n';
+                    for (const row of rows) {
+                        message += `• ${row.ticket_title}: ${row.count}\n`;
+                    }
+
+                    await this.client.sendMessage(groupId, message.trim());
+                }
+
+            } catch (err) {
+                console.error(`❌ Gagal mengambil data attendance summary:`, err);
+            } finally {
+                connection.release();
+            }
+        }, {
+            timezone: 'Asia/Jakarta'
+        });
     }
 
     // Load active schedules from DB, register new ones and stop removed ones
@@ -101,6 +140,9 @@ class SchedulerService {
     // Start the scheduler: initial load, then polling every minute
     async start() {
         await this.loadAndSchedule();
+
+        // Jadwalkan attendance summary
+        await this.scheduleAttendanceSummary();
 
         // Poll every minute to pick up DB changes
         cron.schedule('* * * * *', () => {
