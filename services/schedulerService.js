@@ -154,7 +154,7 @@ class SchedulerService {
         await this.loadAndSchedule();
 
         // Jadwalkan attendance summary
-        await this.scheduleAttendanceSummary();
+        // await this.scheduleAttendanceSummary();
 
         // Poll every minute to pick up DB changes
         cron.schedule('* * * * *', () => {
