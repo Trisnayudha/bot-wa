@@ -42,8 +42,41 @@ class SchedulerService {
     async scheduleAttendanceSummary() {
         const groupId = '6281932639000-1567995833@g.us';
 
-        cron.schedule('*/5 * * * *', async () => {
-            console.log(`📊 Menjalankan attendance summary untuk grup ${groupId}`);
+        cron.schedule('*/30 8-9 * * *', async () => {
+            console.log(`📊 Menjalankan attendance summary untuk grup ${groupId} (Setiap 30 menit, 08:00-09:59)`);
+            const connection = await pool.getConnection();
+
+            try {
+                const [rows] = await connection.query(`
+                    SELECT et.title AS ticket_title, COUNT(ud.id) AS count
+                    FROM users_delegate ud
+                    JOIN events_tickets et ON ud.package_id = et.id
+                    WHERE ud.date_day1 = '2025-06-10' AND ud.events_id = 13
+                    GROUP BY et.title
+                `);
+
+                if (rows.length === 0) {
+                    await this.client.sendMessage(groupId, '*Attendance Summary*\nBelum ada peserta yang check-in hari ini.');
+                } else {
+                    let message = '*Attendance Summary (Day 1)*\n';
+                    for (const row of rows) {
+                        message += `• ${row.ticket_title}: ${row.count}\n`;
+                    }
+
+                    await this.client.sendMessage(groupId, message.trim());
+                }
+
+            } catch (err) {
+                console.error(`❌ Gagal mengambil data attendance summary:`, err);
+            } finally {
+                connection.release();
+            }
+        }, {
+            timezone: 'Asia/Jakarta'
+        });
+
+        cron.schedule('0 * 10-18 * * *', async () => {
+            console.log(`📊 Menjalankan attendance summary untuk grup ${groupId} (Setiap jam, 10:00-18:00)`);
             const connection = await pool.getConnection();
 
             try {
