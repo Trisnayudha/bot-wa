@@ -154,6 +154,43 @@ class MessageRoutes {
             return;
         }
 
+        if (lowerMsg === '.attend') {
+            try {
+                const [rows] = await connection.query(`
+                    SELECT
+                        CASE
+                            WHEN et.type = 'Platinum' THEN 'Delegate Pass'
+                            ELSE et.title
+                        END AS ticket_title,
+                        COUNT(ud.id) AS count
+                    FROM users_delegate ud
+                    JOIN events_tickets et ON ud.package_id = et.id
+                    WHERE ud.date_day1 = '2025-06-10' AND ud.events_id = 13
+                    GROUP BY ticket_title
+                `);
+
+                let totalCheckins = 0;
+
+                if (rows.length === 0) {
+                    await message.reply('*Attendance Summary*\nBelum ada peserta yang check-in hari ini.');
+                } else {
+                    let message = '*Attendance Summary (Day 1)*\n';
+                    for (const row of rows) {
+                        message += `• ${row.ticket_title}: ${row.count}\n`;
+                        totalCheckins += row.count;
+                    }
+
+                    message += `\n*Total Check-ins*: ${totalCheckins}`;
+
+                    await message.reply(message.trim());
+                }
+            } catch (err) {
+                console.error('Error fetching attendance data:', err);
+                await message.reply('❌ Gagal mengambil data attendance. Coba lagi nanti.');
+            }
+            return;
+        }
+
         // ===== COMMAND LAIN =====
         if (lowerMsg === '/info') {
             await messageController.handleInfo(message);
