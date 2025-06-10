@@ -55,13 +55,18 @@ class SchedulerService {
                     GROUP BY et.title
                 `);
 
+                let totalCheckins = 0;  // Variable to store total check-ins
+
                 if (rows.length === 0) {
                     await this.client.sendMessage(groupId, '*Attendance Summary*\nBelum ada peserta yang check-in hari ini.');
                 } else {
                     let message = '*Attendance Summary (Day 1)*\n';
                     for (const row of rows) {
                         message += `• ${row.ticket_title}: ${row.count}\n`;
+                        totalCheckins += row.count;  // Add to total check-ins
                     }
+
+                    message += `\n*Total Check-ins*: ${totalCheckins}`;
 
                     await this.client.sendMessage(groupId, message.trim());
                 }
@@ -88,13 +93,18 @@ class SchedulerService {
                     GROUP BY et.title
                 `);
 
+                let totalCheckins = 0;  // Variable to store total check-ins
+
                 if (rows.length === 0) {
                     await this.client.sendMessage(groupId, '*Attendance Summary*\nBelum ada peserta yang check-in hari ini.');
                 } else {
                     let message = '*Attendance Summary (Day 1)*\n';
                     for (const row of rows) {
                         message += `• ${row.ticket_title}: ${row.count}\n`;
+                        totalCheckins += row.count;  // Add to total check-ins
                     }
+
+                    message += `\n*Total Check-ins*: ${totalCheckins}`;
 
                     await this.client.sendMessage(groupId, message.trim());
                 }
