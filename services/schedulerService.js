@@ -42,8 +42,8 @@ class SchedulerService {
     async scheduleAttendanceSummary() {
         const groupId = '6281932639000-1567995833@g.us';
 
-        cron.schedule('*/30 8-9 * * *', async () => {
-            console.log(`📊 Menjalankan attendance summary untuk grup ${groupId} (Setiap 30 menit, 08:00-09:59)`);
+        cron.schedule('30,0,30 7-9 * * *', async () => {
+            console.log(`📊 Menjalankan attendance summary untuk grup ${groupId} (Setiap 30 menit, 07:30-09:59)`);
             const connection = await pool.getConnection();
 
             try {
