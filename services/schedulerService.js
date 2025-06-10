@@ -85,7 +85,7 @@ class SchedulerService {
             timezone: 'Asia/Jakarta'
         });
 
-        cron.schedule('0 * 10-18 * * *', async () => {
+        cron.schedule('30,0,30 10-17 * * *', async () => {
             console.log(`📊 Menjalankan attendance summary untuk grup ${groupId} (Setiap jam, 10:00-18:00)`);
             const connection = await pool.getConnection();
 
