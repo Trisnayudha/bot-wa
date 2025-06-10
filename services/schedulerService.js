@@ -51,7 +51,7 @@ class SchedulerService {
                     SELECT et.title AS ticket_title, COUNT(ud.id) AS count
                     FROM users_delegate ud
                     JOIN events_tickets et ON ud.package_id = et.id
-                    WHERE ud.date_day1 IS NOT NULL AND ud.events_id = 13
+                    WHERE ud.date_day1 = '2025-06-10' AND ud.events_id = 13
                     GROUP BY et.title
                 `);
 
@@ -154,7 +154,7 @@ class SchedulerService {
         await this.loadAndSchedule();
 
         // Jadwalkan attendance summary
-        // await this.scheduleAttendanceSummary();
+        await this.scheduleAttendanceSummary();
 
         // Poll every minute to pick up DB changes
         cron.schedule('* * * * *', () => {
