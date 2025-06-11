@@ -56,7 +56,7 @@ class SchedulerService {
                         COUNT(ud.id) AS count
                     FROM users_delegate ud
                     JOIN events_tickets et ON ud.package_id = et.id
-                    WHERE ud.date_day1 = '2025-06-10' AND ud.events_id = 13
+                    WHERE ud.date_day2 = '2025-06-11' AND ud.events_id = 13
                     GROUP BY ticket_title
                 `);
 
@@ -99,7 +99,7 @@ class SchedulerService {
                         COUNT(ud.id) AS count
                     FROM users_delegate ud
                     JOIN events_tickets et ON ud.package_id = et.id
-                    WHERE ud.date_day1 = '2025-06-10' AND ud.events_id = 13
+                    WHERE ud.date_day2 = '2025-06-11' AND ud.events_id = 13
                     GROUP BY ticket_title
                 `);
 
