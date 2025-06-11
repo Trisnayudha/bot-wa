@@ -56,7 +56,7 @@ class SchedulerService {
                         COUNT(ud.id) AS count
                     FROM users_delegate ud
                     JOIN events_tickets et ON ud.package_id = et.id
-                    WHERE ud.date_day2 BETWEEN '2025-06-11 00:00:00' AND '2025-06-11 23:59:59' AND ud.events_id = 13
+                    WHERE ud.date_day3 BETWEEN '2025-06-12 00:00:00' AND '2025-06-12 23:59:59' AND ud.events_id = 13
                     GROUP BY ticket_title
                 `);
 
@@ -65,7 +65,7 @@ class SchedulerService {
                 if (rows.length === 0) {
                     await this.client.sendMessage(groupId, '*Attendance Summary*\nBelum ada peserta yang check-in hari ini.');
                 } else {
-                    let message = '*Attendance Summary (Day 2)*\n';
+                    let message = '*Attendance Summary (Day 3)*\n';
                     for (const row of rows) {
                         message += `• ${row.ticket_title}: ${row.count}\n`;
                         totalCheckins += row.count;  // Add to total check-ins
@@ -99,7 +99,7 @@ class SchedulerService {
                         COUNT(ud.id) AS count
                     FROM users_delegate ud
                     JOIN events_tickets et ON ud.package_id = et.id
-                    WHERE ud.date_day2 BETWEEN '2025-06-11 00:00:00' AND '2025-06-11 23:59:59' AND ud.events_id = 13
+                    WHERE ud.date_day3 BETWEEN '2025-06-12 00:00:00' AND '2025-06-12 23:59:59' AND ud.events_id = 13
                     GROUP BY ticket_title
                 `);
 
@@ -108,7 +108,7 @@ class SchedulerService {
                 if (rows.length === 0) {
                     await this.client.sendMessage(groupId, '*Attendance Summary*\nBelum ada peserta yang check-in hari ini.');
                 } else {
-                    let message = '*Attendance Summary (Day 2)*\n';
+                    let message = '*Attendance Summary (Day 3)*\n';
                     for (const row of rows) {
                         message += `• ${row.ticket_title}: ${row.count}\n`;
                         totalCheckins += row.count;  // Add to total check-ins
