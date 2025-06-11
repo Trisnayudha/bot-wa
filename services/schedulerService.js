@@ -65,7 +65,7 @@ class SchedulerService {
                 if (rows.length === 0) {
                     await this.client.sendMessage(groupId, '*Attendance Summary*\nBelum ada peserta yang check-in hari ini.');
                 } else {
-                    let message = '*Attendance Summary (Day 1)*\n';
+                    let message = '*Attendance Summary (Day 2)*\n';
                     for (const row of rows) {
                         message += `• ${row.ticket_title}: ${row.count}\n`;
                         totalCheckins += row.count;  // Add to total check-ins
@@ -108,7 +108,7 @@ class SchedulerService {
                 if (rows.length === 0) {
                     await this.client.sendMessage(groupId, '*Attendance Summary*\nBelum ada peserta yang check-in hari ini.');
                 } else {
-                    let message = '*Attendance Summary (Day 1)*\n';
+                    let message = '*Attendance Summary (Day 2)*\n';
                     for (const row of rows) {
                         message += `• ${row.ticket_title}: ${row.count}\n`;
                         totalCheckins += row.count;  // Add to total check-ins
