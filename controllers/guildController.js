@@ -161,6 +161,33 @@ Nick :
     await message.reply(response);
 }
 
+async function handleClaimHigh(message) {
+    const chat = await message.getChat();
+
+    // Validasi: Pastikan chat adalah grup
+    if (chat.id.server !== 'g.us') {
+        return message.reply('Perintah ini hanya dapat digunakan di dalam grup.');
+    }
+
+
+    const response = `Nick : 
+[1] Epic Weapon 1 [+7/7 Ignorant]	:
+[2] Epic Weapon 2 [+7/7 Ignorant]	:
+[3] Epic Leon High [+7/7 Chaos]: 
+8 Pcs Epic Armor +7/7	: 
+1 Pcs Epic Mask	: 
+1 Pcs Epic Shield :
+1 Pcs Epic Booster [+7/7 Chaos]	: 
+2 Pcs Epic Elemental Amulet	: 
+2 Pcs Epic Elemental Ring	: 
+1 Pcs Epic Wind Knife                :
+50 Pcs Epic Potion 01
+50 Pcs Epic Potion 02
+1 Pcs Separation Jade`;
+
+    await message.reply(response);
+}
+
 async function handleDiscord(message) {
     let connection;
     try {
@@ -545,6 +572,7 @@ async function getSpawnPredictions() {
 module.exports = {
     handleGroupJoin,
     handleClaim,
+    handleClaimHigh,
     handleGroupLeave,
     handleNick,
     handleDiscord,

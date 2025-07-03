@@ -24,6 +24,10 @@ class MessageRoutes {
                 await guildController.handleClaim(message);
                 return;
             }
+            if (lowerMsg === 'high') {
+                await guildController.handleClaimHigh(message);
+                return;
+            }
 
             if (lowerMsg === 'discord') {
                 const discordLink = await guildController.handleDiscord(); // Mengambil link Discord
