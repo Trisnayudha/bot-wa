@@ -54,12 +54,7 @@ class MessageController {
 
             // Hapus perintah '.hidetag' dari awal pesan
             const content = msg.replace(/^\.hidetag\s*/i, '');
-
-            try {
-                await chat.sendMessage(content, { mentions });
-            } catch (err) {
-                message.reply('Gagal mengirim pesan. Silakan coba lagi nanti.');
-            }
+            await chat.sendMessage(content, { mentions });
         }
     }
 
