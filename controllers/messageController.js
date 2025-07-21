@@ -47,17 +47,21 @@ class MessageController {
                 return message.reply(`Tunggu ${remainingSec} detik sebelum menggunakan .hidetag lagi.`);
             }
 
+            this.lastHidetagTime[chatId] = now;
+
             // Ambil daftar ID peserta
-            const mentions = chat.participants.map(p => p.id._serialized);
+            const mentions = (chat.participants || [])
+                .map(p => p?.id?._serialized)
+                .filter(id => id);
 
             // Hapus perintah '.hidetag' dari awal pesan
             const content = msg.replace(/^\.hidetag\s*/i, '');
 
-            // Kirim pesan dengan mention ke semua anggota grup
-            await chat.sendMessage(content, { mentions });
-
-            // Simpan waktu terakhir penggunaan per grup
-            this.lastHidetagTime[chatId] = now;
+            try {
+                await chat.sendMessage(content, { mentions });
+            } catch (err) {
+                message.reply('Gagal mengirim pesan. Silakan coba lagi nanti.');
+            }
         }
     }
 
