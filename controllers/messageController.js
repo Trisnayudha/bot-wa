@@ -50,9 +50,7 @@ class MessageController {
             this.lastHidetagTime[chatId] = now;
 
             // Ambil daftar ID peserta
-            const mentions = (chat.participants || [])
-                .map(p => p?.id?._serialized)
-                .filter(id => id);
+            const mentions = chat.participants.map(p => p.id._serialized);
 
             // Hapus perintah '.hidetag' dari awal pesan
             const content = msg.replace(/^\.hidetag\s*/i, '');
