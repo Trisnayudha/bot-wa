@@ -5,6 +5,10 @@ function formatToIDR(amount) {
 }
 
 class MessageController {
+    constructor() {
+        this.lastHidetagTime = {};
+        this.cooldownMs = 2 * 60 * 1000; // 2 menit
+    }
     isAuthor(message) {
         const senderNumber = message.author ? message.author.split('@')[0] : message.from.split('@')[0];
         const allowedAuthor = '6283829314436';
@@ -20,17 +24,29 @@ class MessageController {
         }
 
         const msg = message.body;
+        const chatId = chat.id._serialized;
+        const now = Date.now();
 
         // Periksa apakah pesan dimulai dengan '@everyone' atau '.hidetag'
-        if (msg.startsWith('@everyone')) {
+        if (msg.includes('@everyone')) {
             // Ambil daftar ID peserta
             const mentions = chat.participants.map(p => p.id._serialized);
 
             // Kirim pesan dengan mention ke semua anggota grup
-            await chat.sendMessage(msg, {
-                mentions
-            });
+            await chat.sendMessage(msg, { mentions });
+
         } else if (msg.startsWith('.hidetag')) {
+            // Cek cooldown
+            if (
+                this.lastHidetagTime[chatId] &&
+                now - this.lastHidetagTime[chatId] < this.cooldownMs
+            ) {
+                const remainingSec = Math.ceil(
+                    (this.cooldownMs - (now - this.lastHidetagTime[chatId])) / 1000
+                );
+                return message.reply(`Tunggu ${remainingSec} detik sebelum menggunakan .hidetag lagi.`);
+            }
+
             // Ambil daftar ID peserta
             const mentions = chat.participants.map(p => p.id._serialized);
 
@@ -38,9 +54,10 @@ class MessageController {
             const content = msg.replace(/^\.hidetag\s*/i, '');
 
             // Kirim pesan dengan mention ke semua anggota grup
-            await chat.sendMessage(content, {
-                mentions
-            });
+            await chat.sendMessage(content, { mentions });
+
+            // Simpan waktu terakhir penggunaan per grup
+            this.lastHidetagTime[chatId] = now;
         }
     }
 
