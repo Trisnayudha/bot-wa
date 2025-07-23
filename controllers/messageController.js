@@ -18,7 +18,6 @@ class MessageController {
     async handleTagAll(message) {
         const chat = await message.getChat();
 
-        // Validasi: Pastikan chat adalah grup
         if (chat.id.server !== 'g.us') {
             return message.reply('Perintah ini hanya dapat digunakan di dalam grup.');
         }
@@ -27,14 +26,18 @@ class MessageController {
         const chatId = chat.id._serialized;
         const now = Date.now();
 
-        // Periksa apakah pesan dimulai dengan '@everyone' atau '.hidetag'
+        // Ambil daftar ID peserta dengan validasi
+        const mentions = chat.participants
+            .map(p => p.id && p.id._serialized ? p.id._serialized : null) // Pastikan p.id dan _serialized ada
+            .filter(id => id !== null); // Filter keluar yang null
+
+        if (mentions.length === 0) {
+            console.warn(`[${chatId}] Tidak ada peserta yang valid ditemukan untuk ditag.`);
+            return message.reply('Tidak dapat menemukan peserta untuk ditag di grup ini.');
+        }
+
         if (msg.includes('@everyone')) {
-            // Ambil daftar ID peserta
-            const mentions = chat.participants.map(p => p.id._serialized);
-
-            // Kirim pesan dengan mention ke semua anggota grup
             await chat.sendMessage(msg, { mentions });
-
         } else if (msg.startsWith('.hidetag')) {
             // Cek cooldown
             if (
@@ -49,10 +52,6 @@ class MessageController {
 
             this.lastHidetagTime[chatId] = now;
 
-            // Ambil daftar ID peserta
-            const mentions = chat.participants.map(p => p.id._serialized);
-
-            // Hapus perintah '.hidetag' dari awal pesan
             const content = msg.replace(/^\.hidetag\s*/i, '');
             await chat.sendMessage(content, { mentions });
         }
