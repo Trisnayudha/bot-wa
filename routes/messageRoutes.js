@@ -18,7 +18,8 @@ class MessageRoutes {
         // ===== GRUP SPESIFIK HANDLER =====
         if (
             chat.id._serialized === '120363042863310424@g.us' ||
-            chat.id._serialized === '120363040158938647@g.us'
+            chat.id._serialized === '120363040158938647@g.us' ||
+            chat.id._serialized === '120363421048716633@g.us'
         ) {
             if (lowerMsg === 'claim') {
                 await guildController.handleClaim(message);
