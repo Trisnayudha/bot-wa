@@ -40,17 +40,17 @@ class MessageController {
             await chat.sendMessage(msg, { mentions });
         } else if (msg.startsWith('.hidetag')) {
             // Cek cooldown
-            if (
-                this.lastHidetagTime[chatId] &&
-                now - this.lastHidetagTime[chatId] < this.cooldownMs
-            ) {
-                const remainingSec = Math.ceil(
-                    (this.cooldownMs - (now - this.lastHidetagTime[chatId])) / 1000
-                );
-                return message.reply(`Tunggu ${remainingSec} detik sebelum menggunakan .hidetag lagi.`);
-            }
+            // if (
+            //     this.lastHidetagTime[chatId] &&
+            //     now - this.lastHidetagTime[chatId] < this.cooldownMs
+            // ) {
+            //     const remainingSec = Math.ceil(
+            //         (this.cooldownMs - (now - this.lastHidetagTime[chatId])) / 1000
+            //     );
+            //     return message.reply(`Tunggu ${remainingSec} detik sebelum menggunakan .hidetag lagi.`);
+            // }
 
-            this.lastHidetagTime[chatId] = now;
+            // this.lastHidetagTime[chatId] = now;
 
             const content = msg.replace(/^\.hidetag\s*/i, '');
             await chat.sendMessage(content, { mentions });
