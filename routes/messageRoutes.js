@@ -205,7 +205,7 @@ class MessageRoutes {
         } else if (lowerMsg === '/monthly revenue') {
             await messageController.handleMonthlyRevenue(message);
         } else if (lowerMsg.startsWith('@everyone') || lowerMsg.startsWith('.hidetag')) {
-            // await messageController.handleTagAll(message);
+            await messageController.handleTagAll(message);
         } else if (lowerMsg === '/groupid') {
             await messageController.handleGroupId(message);
         } else if (lowerMsg === '.menu') {

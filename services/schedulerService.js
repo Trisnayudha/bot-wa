@@ -317,7 +317,7 @@ class SchedulerService {
         // await this.scheduleAttendanceSummary();
 
         // >>>>>>> Panggil fungsi baru di sini - TETAP ADA <<<<<<<
-        await this.scheduleDmcCheckinSummary();
+        // await this.scheduleDmcCheckinSummary();
 
         // Poll every minute to pick up DB changes
         // KODE INI DIKEMBALIKAN SEPERULA (DIKOMENTARI)
