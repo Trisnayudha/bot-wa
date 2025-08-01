@@ -149,15 +149,15 @@ async function handleClaim(message) {
 
     const response = `Nickname = 
 
-[1] Epic Weapon 1 [+7/7 Ignorant] =
-[2] Epic Weapon 2 [+7/7 Ignorant] =	
-[3] Epic Leon High [+7/7 Chaos] =	
-8 Pcs Epic Armor +7/7	=
+[1] Epic Weapon 1 [+7/7 Ignorant] = 
+[2] Epic Weapon 2 [+7/7 Ignorant] = 
+[3] Epic Leon High [+7/7 Chaos] = 
+8 Pcs Epic Armor +7/7	= 
 1 Pcs MonkeyKing Mask =	
-1 Pcs MonkeyKing Shield / SubShield =
+1 Pcs MonkeyKing Shield / SubShield = 
 1 Pcs MonkeyKing Booster [+7/7 Chaos] =	
-2 Pcs Epic Elemental Amulet =
-2 Pcs Epic Elemental Ring =
+2 Pcs Epic Elemental Amulet = 
+2 Pcs Epic Elemental Ring = 
 50 Pcs Epic Potion 01
 50 Pcs Epic Potion 02
 1 Pcs Separation Jade
@@ -165,7 +165,7 @@ async function handleClaim(message) {
 1 Pcs Epic Exclusive Invisible Booster
 1 Pcs EPIC PC Cafe 10% (Permanent)
 1 Pcs Epic Weekly Ransum Coupon
-2 Pcs Jade Upgrader (No Trade)`;
+2 Pcs Jade Upgrader (No Trade)`;
 
     await message.reply(response);
 }
