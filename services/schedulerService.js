@@ -141,77 +141,77 @@ class SchedulerService {
 
     // Load active schedules from DB, register new ones and stop removed ones
     // KODE INI DIKEMBALIKAN SEPERTI SEMULA (DIKOMENTARI)
-    // async loadAndSchedule() {
-    //     let schedules;
-    //     try {
-    //         [schedules] = await mainPool.query(
-    //             'SELECT * FROM schedules WHERE is_active = 1'
-    //         );
-    //     } catch (err) {
-    //         console.error('❌ Gagal ambil data jadwal dari DB:', err);
-    //         return;
-    //     }
+    async loadAndSchedule() {
+        let schedules;
+        try {
+            [schedules] = await mainPool.query(
+                'SELECT * FROM schedules WHERE is_active = 1'
+            );
+        } catch (err) {
+            console.error('❌ Gagal ambil data jadwal dari DB:', err);
+            return;
+        }
 
-    //     const activeIds = new Set();
+        const activeIds = new Set();
 
-    //     // Register new schedules
-    //     for (const s of schedules) {
-    //         activeIds.add(s.id);
+        // Register new schedules
+        for (const s of schedules) {
+            activeIds.add(s.id);
 
-    //         if (!this.scheduled.has(s.id)) {
-    //             const task = cron.schedule(
-    //                 s.cron_expression,
-    //                 async () => {
-    //                     const start = new Date();
-    //                     console.log(`🚀 [${s.id}] Mulai task (${s.type}) pada ${start.toLocaleString()}`);
+            if (!this.scheduled.has(s.id)) {
+                const task = cron.schedule(
+                    s.cron_expression,
+                    async () => {
+                        const start = new Date();
+                        console.log(`🚀 [${s.id}] Mulai task (${s.type}) pada ${start.toLocaleString()}`);
 
-    //                     try {
-    //                         let handler;
-    //                         if (s.use_ai) {
-    //                             switch (s.type) {
-    //                                 case 'rf-war':
-    //                                     handler = new RfWarHandler(this.client, s);
-    //                                     break;
-    //                                 case 'daily-reminder':
-    //                                     handler = new DailyReminderHandler(this.client, s);
-    //                                     break;
-    //                                 case 'personal':
-    //                                     handler = new PersonalHandler(this.client, s);
-    //                                     break;
-    //                                 default:
-    //                                     handler = new DefaultHandler(this.client, s);
-    //                             }
-    //                         } else {
-    //                             handler = new DefaultHandler(this.client, s);
-    //                         }
+                        try {
+                            let handler;
+                            if (s.use_ai) {
+                                switch (s.type) {
+                                    case 'rf-war':
+                                        handler = new RfWarHandler(this.client, s);
+                                        break;
+                                    case 'daily-reminder':
+                                        handler = new DailyReminderHandler(this.client, s);
+                                        break;
+                                    case 'personal':
+                                        handler = new PersonalHandler(this.client, s);
+                                        break;
+                                    default:
+                                        handler = new DefaultHandler(this.client, s);
+                                }
+                            } else {
+                                handler = new DefaultHandler(this.client, s);
+                            }
 
-    //                         await handler.handle();
-    //                     } catch (err) {
-    //                         console.error(`❌ Error eksekusi jadwal ID ${s.id}:`, err);
-    //                     }
+                            await handler.handle();
+                        } catch (err) {
+                            console.error(`❌ Error eksekusi jadwal ID ${s.id}:`, err);
+                        }
 
-    //                     const end = new Date();
-    //                     console.log(`✅ [${s.id}] Selesai task pada ${end.toLocaleString()} (Durasi: ${(end - start) / 1000}s)`);
-    //                 },
-    //                 {
-    //                     timezone: s.timezone || 'Asia/Jakarta'
-    //                 }
-    //             );
+                        const end = new Date();
+                        console.log(`✅ [${s.id}] Selesai task pada ${end.toLocaleString()} (Durasi: ${(end - start) / 1000}s)`);
+                    },
+                    {
+                        timezone: s.timezone || 'Asia/Jakarta'
+                    }
+                );
 
-    //             this.scheduled.set(s.id, task);
-    //             console.log(`➕ [${s.id}] Jadwal baru didaftarkan (${s.cron_expression} — ${s.type})`);
-    //         }
-    //     }
+                this.scheduled.set(s.id, task);
+                console.log(`➕ [${s.id}] Jadwal baru didaftarkan (${s.cron_expression} — ${s.type})`);
+            }
+        }
 
-    //     // Stop and remove schedules that are no longer active
-    //     for (const [id, task] of this.scheduled) {
-    //         if (!activeIds.has(id)) {
-    //             task.stop();
-    //             this.scheduled.delete(id);
-    //             console.log(`➖ [${id}] Jadwal dihentikan karena tidak aktif lagi`);
-    //         }
-    //     }
-    // }
+        // Stop and remove schedules that are no longer active
+        for (const [id, task] of this.scheduled) {
+            if (!activeIds.has(id)) {
+                task.stop();
+                this.scheduled.delete(id);
+                console.log(`➖ [${id}] Jadwal dihentikan karena tidak aktif lagi`);
+            }
+        }
+    }
 
     // =========================================================================
     // >>>>>>> FUNGSI scheduleDmcCheckinSummary - MENGGUNAKAN axios.post <<<<<<<
@@ -311,7 +311,7 @@ class SchedulerService {
     // Start the scheduler: initial load, then polling every minute
     async start() {
         // KODE INI DIKEMBALIKAN SEPERTI SEMULA (DIKOMENTARI)
-        // await this.loadAndSchedule();
+        await this.loadAndSchedule();
 
         // Jadwalkan attendance summary (jika perlu, uncomment)
         // await this.scheduleAttendanceSummary();
@@ -322,9 +322,9 @@ class SchedulerService {
         // Poll every minute to pick up DB changes
         // KODE INI DIKEMBALIKAN SEPERULA (DIKOMENTARI)
         cron.schedule('* * * * *', () => {
-            // this.loadAndSchedule().catch(err => {
-            //     console.error('❌ Error saat polling jadwal:', err);
-            // });
+            this.loadAndSchedule().catch(err => {
+                console.error('❌ Error saat polling jadwal:', err);
+            });
         });
 
         console.log('🚀 Scheduler aktif dengan polling setiap menit');
