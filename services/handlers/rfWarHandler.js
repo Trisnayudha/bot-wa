@@ -38,9 +38,9 @@ class RfWarHandler {
         const { status_game, online_field, chip_a, chip_b, chip_c, win_race, lose_race } = serverStatus;
 
         let actionPhrase = '';
-        if (win_race === 'Cora') {
-            actionPhrase = 'Ambil kesempatan untuk take HR lagi dan tunjukkan dominasi Cora di medan perang!';
-        } else if (chip_c === 0) {
+        if (win_race === 'Bellato') {
+            actionPhrase = 'Ambil kesempatan untuk take HR lagi dan tunjukkan dominasi Bellato di medan perang!';
+        } else if (chip_b === 0) {
             actionPhrase = 'Bangkit dan menangkan WAR ini demi membalikkan keadaan!';
         } else {
             actionPhrase = 'Kesempatan masih terbuka untuk menangkan WAR ini, jangan sampai Accretia atau Belato mendominasi!';
