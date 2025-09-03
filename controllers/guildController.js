@@ -381,7 +381,7 @@ function startGameStatusMonitor(client) {
                     message = `📡 *Status RF Strom PVP berubah*\nStatus sekarang: *${status}*\n\n🕒 ${timeNow}`;
                 }
 
-                const targetNumber = '120363042863310424@g.us';
+                const targetNumber = '120363421048716633@g.us';
                 const chat = await client.getChatById(targetNumber);
                 await chat.sendMessage(message);
 
@@ -406,7 +406,7 @@ async function stopGameStatusMonitor(message) {
     isMonitoringStarted = false;
     lastKnownStatus = null;
 
-    await message.reply('🛑 Monitor RF EPIC PVP telah *dimatikan*.');
+    await message.reply('🛑 Monitor RF Strom PVP telah *dimatikan*.');
 }
 
 async function handleUpdateLogs(message) {
@@ -445,7 +445,7 @@ async function handleUpdateLogs(message) {
             return;
         }
 
-        const replyText = `📋 *Update Log Terbaru RF EPIC PVP*\n\n${updateList.map((line, idx) => `${idx + 1}. ${line}`).join('\n')}`;
+        const replyText = `📋 *Update Log Terbaru RF Strom PVP*\n\n${updateList.map((line, idx) => `${idx + 1}. ${line}`).join('\n')}`;
         await message.reply(replyText);
 
     } catch (err) {
