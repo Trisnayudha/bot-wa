@@ -19,7 +19,7 @@ class RfWarHandler {
                 args: isProduction ? ['--no-sandbox', '--disable-setuid-sandbox'] : [] // Auto switch sandbox
             });
             const page = await browser.newPage();
-            await page.goto('https://epic.gamecp.net/web_api/?do=satu', { waitUntil: 'domcontentloaded' });
+            await page.goto('https://storm.gamecp.net/web_api/?do=satu', { waitUntil: 'domcontentloaded' });
 
             const content = await page.evaluate(() => {
                 const preTag = document.querySelector('pre');

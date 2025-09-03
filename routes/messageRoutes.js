@@ -57,7 +57,7 @@ class MessageRoutes {
             // ===== HIDUPKAN MONITOR SERVER RF EPIC =====
             if (lowerMsg === '.onserver') {
                 guildController.startGameStatusMonitor(this.client);
-                await message.reply('✅ Monitor Server RF EPIC *sudah diaktifkan*.');
+                await message.reply('✅ Monitor Server RF Strom *sudah diaktifkan*.');
                 return;
             }
 
