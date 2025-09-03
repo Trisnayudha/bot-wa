@@ -276,7 +276,7 @@ async function handleStatusChip(message) {
         });
 
         const page = await browser.newPage();
-        await page.goto('https://epic.gamecp.net/web_api/?do=satu', { waitUntil: 'domcontentloaded' });
+        await page.goto('https://storm.gamecp.net/web_api/?do=satu', { waitUntil: 'domcontentloaded' });
 
         const content = await page.evaluate(() => {
             const preTag = document.querySelector('pre');
@@ -349,7 +349,7 @@ function startGameStatusMonitor(client) {
             });
 
             const page = await browser.newPage();
-            await page.goto('https://epic.gamecp.net/web_api/?do=satu', {
+            await page.goto('https://storm.gamecp.net/web_api/?do=satu', {
                 waitUntil: 'domcontentloaded',
                 timeout: 15000
             });
@@ -374,11 +374,11 @@ function startGameStatusMonitor(client) {
                 let message;
 
                 if (status === 'ONLINE') {
-                    message = `⚔️ *RF EPIC PVP sudah UP!*\n\n🔥 Server siap tempur. Ajak tim, login, dan langsung GAS WAR!\n\n🕒 ${timeNow}`;
+                    message = `⚔️ *RF Strom PVP sudah UP!*\n\n🔥 Server siap tempur. Ajak tim, login, dan langsung GAS WAR!\n\n🕒 ${timeNow}`;
                 } else if (status === 'OFFLINE') {
-                    message = `🔧 *RF EPIC PVP sedang DOWN*\n\nServer dalam kondisi mati/maintenance.\nCek berkala untuk update selanjutnya.\n\n🕒 ${timeNow}`;
+                    message = `🔧 *RF Strom PVP sedang DOWN*\n\nServer dalam kondisi mati/maintenance.\nCek berkala untuk update selanjutnya.\n\n🕒 ${timeNow}`;
                 } else {
-                    message = `📡 *Status RF EPIC PVP berubah*\nStatus sekarang: *${status}*\n\n🕒 ${timeNow}`;
+                    message = `📡 *Status RF Strom PVP berubah*\nStatus sekarang: *${status}*\n\n🕒 ${timeNow}`;
                 }
 
                 const targetNumber = '120363042863310424@g.us';
@@ -419,7 +419,7 @@ async function handleUpdateLogs(message) {
         });
 
         const page = await browser.newPage();
-        await page.goto('https://www.epicfullpvp.com/update-logs/', {
+        await page.goto('https://www.rf-storm.com/update-logs/', {
             waitUntil: 'domcontentloaded',
             timeout: 20000
         });
