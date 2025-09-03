@@ -24,7 +24,7 @@ async function handleGroupJoin(notification, client) {
         const chat = await notification.getChat();
 
         // Pastikan ini adalah grup yang ditentukan
-        if (chat.id._serialized === '120363042863310424@g.us') {
+        if (chat.id._serialized === '120363421048716633@g.us') {
             // Dapatkan ID peserta dari notifikasi (dari properti "participant")
             const userId = notification.id.participant;
             console.log(`User ID: ${userId}`);
