@@ -97,7 +97,7 @@ async function handleGroupLeave(notification, client) {
         const chat = await notification.getChat();
 
         // Pastikan notifikasi berasal dari grup yang diinginkan
-        if (chat.id._serialized === '120363042863310424@g.us') {
+        if (chat.id._serialized === '120363421048716633@g.us') {
             // Ambil ID peserta yang keluar
             const userId = notification.id.participant;
             const number = userId.split('@')[0]; // Ekstrak nomor (tanpa @c.us)
