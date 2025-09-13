@@ -147,25 +147,9 @@ async function handleClaim(message) {
     }
 
 
-    const response = `Nickname = 
-
-[1] Epic Weapon 1 [+7/7 Ignorant] = 
-[2] Epic Weapon 2 [+7/7 Ignorant] = 
-[3] Epic Leon High [+7/7 Chaos] = 
-8 Pcs Epic Armor +7/7	= 
-1 Pcs MonkeyKing Mask =	
-1 Pcs MonkeyKing Shield / SubShield = 
-1 Pcs MonkeyKing Booster [+7/7 Chaos] =	
-2 Pcs Epic Elemental Amulet = 
-2 Pcs Epic Elemental Ring = 
-50 Pcs Epic Potion 01
-50 Pcs Epic Potion 02
-1 Pcs Separation Jade
-1 Pcs MonkeyKing Wind Knife
-1 Pcs Epic Exclusive Invisible Booster
-1 Pcs EPIC PC Cafe 10% (Permanent)
-1 Pcs Epic Weekly Ransum Coupon
-2 Pcs Jade Upgrader (No Trade)`;
+    const response = `Join discord discord.gg/allstars-rf
+Claim role + isi data member
+Isi list gpack https://discord.com/channels/789889310337662976/1258496697978589265`;
 
     await message.reply(response);
 }
