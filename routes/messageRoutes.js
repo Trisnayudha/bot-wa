@@ -1,5 +1,6 @@
 const messageController = require('../controllers/messageController');
 const guildController = require('../controllers/guildController');
+const eventController = require('../controllers/eventController');
 const OpenAIService = require('../openai/openaiService');
 const OpenAIImageService = require('../openai/openaiImageService');
 const { MessageMedia } = require('whatsapp-web.js');
@@ -31,8 +32,8 @@ class MessageRoutes {
             }
 
             if (lowerMsg === 'discord') {
-                const discordLink = await guildController.handleDiscord(); // Mengambil link Discord
-                await message.reply(discordLink); // Mengirim link Discord ke pengguna
+                const discordLink = await guildController.handleDiscord();
+                await message.reply(discordLink);
                 return;
             }
 
@@ -43,9 +44,7 @@ class MessageRoutes {
 
             if (lowerMsg === '.pb') {
                 try {
-                    // Ambil string prediksi dari guildController
                     const predictionText = await guildController.getSpawnPredictions();
-                    // Kirim sebagai reply
                     await message.reply(predictionText);
                 } catch (err) {
                     console.error('Error saat generate spawn predictions:', err);
@@ -54,7 +53,7 @@ class MessageRoutes {
                 return;
             }
 
-            // ===== HIDUPKAN MONITOR SERVER RF EPIC =====
+            // ===== MONITOR SERVER RF EPIC =====
             if (lowerMsg === '.onserver') {
                 guildController.startGameStatusMonitor(this.client);
                 await message.reply('✅ Monitor Server RF Strom *sudah diaktifkan*.');
@@ -70,17 +69,14 @@ class MessageRoutes {
                 await guildController.handleUpdateLogs(message);
                 return;
             }
-
-
         }
 
-        // ===== MENANGANI PERINTAH .SETDISCORD <link> =====
+        // ===== .SETDISCORD <link> =====
         if (lowerMsg.startsWith('.setdiscord')) {
-            const link = msg.slice(12).trim(); // Mengambil link setelah .setdiscord
+            const link = msg.slice(12).trim();
             if (link) {
-                // Menyimpan link Discord ke database
                 const response = await guildController.setDiscordLink(link);
-                await message.reply(response); // Kirim balasan ke pengguna
+                await message.reply(response);
             } else {
                 await message.reply('Silakan kirimkan link Discord yang valid setelah perintah .setdiscord');
             }
@@ -95,44 +91,35 @@ class MessageRoutes {
             const prompt = match[2].trim();
             const imageUrl = await OpenAIImageService.generateImage(prompt, chat.id._serialized);
 
-            // ✅ Cek apakah hasilnya URL valid
             if (typeof imageUrl === 'string' && imageUrl.startsWith('http')) {
                 try {
-                    const response = await axios.get(imageUrl, {
-                        responseType: 'arraybuffer'
-                    });
-
+                    const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
                     const mimeType = response.headers['content-type'];
                     const imageBuffer = Buffer.from(response.data, 'binary');
                     const base64Image = imageBuffer.toString('base64');
-
                     const media = new MessageMedia(mimeType, base64Image, 'ai-image.png');
                     await message.reply(media);
                 } catch (err) {
                     console.error('Gagal kirim gambar:', err.message);
-                    await message.reply('Gambarnya udah jadi, tapi gagal ngirim cuy 🥲');
+                    await message.reply('Gambarnya udah jadi, tapi gagal ngirim.');
                 }
             } else {
-                // Jika gagal atau limit tercapai
-                await message.reply(imageUrl || 'Gagal generate gambar, coba lagi deh.');
+                await message.reply(imageUrl || 'Gagal generate gambar, coba lagi.');
             }
-
             return;
         }
 
-
-        // ===== PERINTAH AI TEKS (DEEPSEEK) =====
+        // ===== PERINTAH AI TEKS (.ai = Jaksel) =====
         if (lowerMsg.startsWith('.ai')) {
             const question = msg.slice(4).trim();
             if (question) {
                 try {
-                    // Cek apakah pesan merupakan reply
                     const isReply = message.hasQuotedMsg === true;
-                    const isJaksel = true; // Gunakan gaya Jaksel untuk .ai
+                    const isJaksel = true;
                     const response = await OpenAIService.getResponse(question, chat.id._serialized, isReply, isJaksel);
                     await message.reply(response);
                 } catch (error) {
-                    await message.reply('Yah error pas jawab pertanyaan, coba lagi yak.');
+                    await message.reply('Yah error pas jawab pertanyaan, coba lagi.');
                 }
             } else {
                 await message.reply('Silakan masukin pertanyaan setelah .ai');
@@ -140,18 +127,17 @@ class MessageRoutes {
             return;
         }
 
-        // ===== DETEKSI PERINTAH /ASK (FORMAL) =====
+        // ===== /ask (Formal) =====
         if (lowerMsg.startsWith('/ask')) {
             const question = msg.slice(5).trim();
             if (question) {
                 try {
-                    // Cek apakah pesan merupakan reply
                     const isReply = message.hasQuotedMsg === true;
-                    const isJaksel = false; // Gunakan gaya Formal untuk /ask
+                    const isJaksel = false;
                     const response = await OpenAIService.getResponse(question, chat.id._serialized, isReply, isJaksel);
                     await message.reply(response);
                 } catch (error) {
-                    await message.reply('Yah error pas jawab pertanyaan, coba lagi yak.');
+                    await message.reply('Yah error pas jawab pertanyaan, coba lagi.');
                 }
             } else {
                 await message.reply('Silakan masukin pertanyaan setelah /ask');
@@ -159,6 +145,7 @@ class MessageRoutes {
             return;
         }
 
+        // ===== ATTENDANCE (SQL lokal) =====
         if (lowerMsg === '.attend') {
             try {
                 const [rows] = await connection.query(`
@@ -179,15 +166,13 @@ class MessageRoutes {
                 if (rows.length === 0) {
                     await message.reply('*Attendance Summary*\nBelum ada peserta yang check-in hari ini.');
                 } else {
-                    let message = '*Attendance Summary (Day 1)*\n';
+                    let txt = '*Attendance Summary (Day 1)*\n';
                     for (const row of rows) {
-                        message += `• ${row.ticket_title}: ${row.count}\n`;
+                        txt += `• ${row.ticket_title}: ${row.count}\n`;
                         totalCheckins += row.count;
                     }
-
-                    message += `\n*Total Check-ins*: ${totalCheckins}`;
-
-                    await message.reply(message.trim());
+                    txt += `\n*Total Check-ins*: ${totalCheckins}`;
+                    await message.reply(txt.trim());
                 }
             } catch (err) {
                 console.error('Error fetching attendance data:', err);
@@ -195,6 +180,112 @@ class MessageRoutes {
             }
             return;
         }
+
+        // ===== PESERTA & DETAIL (simple; tanpa pagination) =====
+        // Command yang diterima:
+        //   .peserta
+        //   /peserta
+        //   .participants
+        //   /participants
+        //   .detail <code> [event_id]
+        //   /detail  <code> [event_id]
+        //   (alias lama tetap: /participant <code> [event_id])
+
+        // default event id → ENV atau 55
+        const DEFAULT_EVENT_ID = parseInt(process.env.EVENT_DEFAULT_ID || '55', 10);
+
+        // --- LIST ---
+        // Bentuk: ".peserta", "/peserta", ".participants 55", "/participants 13", dll.
+        // Jika event_id tidak diberikan → pakai DEFAULT_EVENT_ID
+        let listCmd = msg.match(/^(?:\/|\.)?(?:peserta|participants)\b(?:\s+(\d+))?$/i);
+        if (listCmd) {
+            console.log(listCmd);
+            const eventsId = listCmd[1] ? parseInt(listCmd[1], 10) : DEFAULT_EVENT_ID;
+            if (!Number.isFinite(eventsId)) {
+                await message.reply('Format: .peserta 55  (event_id opsional; default 55)');
+                return;
+            }
+            try {
+                await eventController.handleListParticipants(message, { eventsId });
+            } catch (err) {
+                console.error('Error handleListParticipants:', err);
+                await message.reply('❌ Gagal mengambil daftar peserta.');
+            }
+            return;
+        }
+
+        // --- DETAIL ---
+        // Bentuk: ".detail MGHEXVB [55]" / "/detail MGHEXVB [55]" / "/participant MGHEXVB [55]"
+        let detCmd = msg.match(/^(?:\/|\.)?(?:detail|participant|peserta_detail)\b\s+([^\s]+)(?:\s+(\d+))?$/i);
+        if (detCmd) {
+            const codepayment = (detCmd[1] || '').trim();
+            const eventsId = detCmd[2] ? parseInt(detCmd[2], 10) : DEFAULT_EVENT_ID;
+
+            if (!codepayment) {
+                await message.reply('Format: .detail <codepayment> [event_id]\nContoh: .detail MGHEXVB 55');
+                return;
+            }
+            try {
+                await eventController.handleParticipantDetail(message, { codepayment, eventsId });
+            } catch (err) {
+                console.error('Error handleParticipantDetail:', err);
+                await message.reply('❌ Gagal mengambil detail peserta.');
+            }
+            return;
+        }
+
+        // ===== CHECK-IN SUMMARY (on-demand) =====
+        // Bentuk: ".checkin [event_id]" / "/checkin [event_id]" / ".ci [event_id]"
+        let checkinCmd = msg.match(/^(?:\/|\.)?(?:checkin|ci)\b(?:\s+(\d+))?$/i);
+        if (checkinCmd) {
+            const eventsId = checkinCmd[1] ? parseInt(checkinCmd[1], 10) : DEFAULT_EVENT_ID;
+            function randTag(length = 6) {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                let result = '';
+                for (let i = 0; i < length; i++) {
+                    result += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                return result;
+            }
+
+            const apiUrl = 'https://membership.djakarta-miningclub.com/api/summary-attandance';
+            const tag = randTag();
+
+            try {
+                const { data: rows } = await axios.post(apiUrl, { event_id: eventsId }, { timeout: 15000 });
+
+                let totalCheckins = 0;
+                let txt = `*DMC Check-in Summary* [${tag}]\nEvent ID: ${eventsId}\n`;
+
+                if (!rows || rows.length === 0) {
+                    txt += 'Belum ada data check-in.\n';
+                } else {
+                    for (const row of rows) {
+                        const cat = (row.package_category || '').toString();
+                        const count = Number(row.count || 0);
+                        totalCheckins += count;
+                        txt += `• ${cat}: ${count}\n`;
+                    }
+                }
+
+                const now = new Date().toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' });
+                txt += `\n*Total Checked-in*: ${totalCheckins}`;
+                txt += `\n*Update Terakhir*: ${now}`;
+                txt += `\nRef: ${tag}`;
+
+                await message.reply(txt.trim());
+            } catch (err) {
+                console.error('❌ Gagal ambil Check-in Summary (POST):', err?.message || err);
+                if (err?.response) {
+                    console.error('API Response Data:', err.response.data);
+                    console.error('API Response Status:', err.response.status);
+                }
+                await message.reply('❌ Gagal mengambil data check-in summary.');
+            }
+            return;
+        }
+
+
 
         // ===== COMMAND LAIN =====
         if (lowerMsg === '/info') {

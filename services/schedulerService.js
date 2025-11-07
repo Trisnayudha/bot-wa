@@ -49,95 +49,96 @@ class SchedulerService {
 
     // Menjadwalkan attendance summary setiap 5 menit untuk grup tertentu
     // KODE INI DIKEMBALIKAN SEPERTI SEMULA (DIKOMENTARI)
-    // async scheduleAttendanceSummary() {
-    //     const groupId = '628193234928717023@g.us'; // Contoh Group ID
+    async scheduleAttendanceSummary() {
+        // const groupId = '6281932639000-1567995833@g.us'; // Group MMI
+        const groupId = '120363402762857866@g.us'; // Group Kocak
 
-    //     cron.schedule('30,0,30 7-9 * * *', async () => {
-    //         console.log(`📊 Menjalankan attendance summary untuk grup ${groupId} (Setiap 30 menit, 07:30-09:59)`);
-    //         const connection = await pool.getConnection();
+        cron.schedule('30,0,30 7-9 * * *', async () => {
+            console.log(`📊 Menjalankan attendance summary untuk grup ${groupId} (Setiap 30 menit, 07:30-09:59)`);
+            const connection = await pool.getConnection();
 
-    //         try {
-    //             const [rows] = await connection.query(`
-    //                 SELECT
-    //                     CASE
-    //                         WHEN et.type = 'Platinum' THEN 'Delegate Pass'
-    //                         ELSE et.title
-    //                     END AS ticket_title,
-    //                     COUNT(ud.id) AS count
-    //                 FROM users_delegate ud
-    //                 JOIN events_tickets et ON ud.package_id = et.id
-    //                 WHERE ud.date_day3 BETWEEN '2025-06-12 00:00:00' AND '2025-06-12 23:59:59' AND ud.events_id = 13
-    //                 GROUP BY ticket_title
-    //             `);
+            try {
+                const [rows] = await connection.query(`
+                    SELECT
+                        CASE
+                            WHEN et.type = 'Platinum' THEN 'Delegate Pass'
+                            ELSE et.title
+                        END AS ticket_title,
+                        COUNT(ud.id) AS count
+                    FROM users_delegate ud
+                    JOIN events_tickets et ON ud.package_id = et.id
+                    WHERE ud.date_day3 BETWEEN '2025-06-12 00:00:00' AND '2025-06-12 23:59:59' AND ud.events_id = 13
+                    GROUP BY ticket_title
+                `);
 
-    //             let totalCheckins = 0;
+                let totalCheckins = 0;
 
-    //             if (rows.length === 0) {
-    //                 await this.client.sendMessage(groupId, '*Attendance Summary*\nBelum ada peserta yang check-in hari ini.');
-    //             } else {
-    //                 let message = '*Attendance Summary (Day 3)*\n';
-    //                 for (const row of rows) {
-    //                     message += `• ${row.ticket_title}: ${row.count}\n`;
-    //                     totalCheckins += row.count;
-    //                 }
+                if (rows.length === 0) {
+                    await this.client.sendMessage(groupId, '*Attendance Summary*\nBelum ada peserta yang check-in hari ini.');
+                } else {
+                    let message = '*Attendance Summary (Day 3)*\n';
+                    for (const row of rows) {
+                        message += `• ${row.ticket_title}: ${row.count}\n`;
+                        totalCheckins += row.count;
+                    }
 
-    //                 message += `\n*Total Check-ins*: ${totalCheckins}`;
+                    message += `\n*Total Check-ins*: ${totalCheckins}`;
 
-    //                 await this.client.sendMessage(groupId, message.trim());
-    //             }
+                    await this.client.sendMessage(groupId, message.trim());
+                }
 
-    //         } catch (err) {
-    //             console.error(`❌ Gagal mengambil data attendance summary:`, err);
-    //         } finally {
-    //             connection.release();
-    //         }
-    //     }, {
-    //         timezone: 'Asia/Jakarta'
-    //     });
+            } catch (err) {
+                console.error(`❌ Gagal mengambil data attendance summary:`, err);
+            } finally {
+                connection.release();
+            }
+        }, {
+            timezone: 'Asia/Jakarta'
+        });
 
-    //     cron.schedule('30,0,30 10-17 * * *', async () => {
-    //         console.log(`📊 Menjalankan attendance summary untuk grup ${groupId} (Setiap jam, 10:00-18:00)`);
-    //         const connection = await pool.getConnection();
+        cron.schedule('30,0,30 10-17 * * *', async () => {
+            console.log(`📊 Menjalankan attendance summary untuk grup ${groupId} (Setiap jam, 10:00-18:00)`);
+            const connection = await pool.getConnection();
 
-    //         try {
-    //             const [rows] = await connection.query(`
-    //                 SELECT
-    //                     CASE
-    //                         WHEN et.type = 'Platinum' THEN 'Delegate Pass'
-    //                         ELSE et.title
-    //                     END AS ticket_title,
-    //                     COUNT(ud.id) AS count
-    //                 FROM users_delegate ud
-    //                 JOIN events_tickets et ON ud.package_id = et.id
-    //                 WHERE ud.date_day3 BETWEEN '2025-06-12 00:00:00' AND '2025-06-12 23:59:59' AND ud.events_id = 13
-    //                 GROUP BY ticket_title
-    //             `);
+            try {
+                const [rows] = await connection.query(`
+                    SELECT
+                        CASE
+                            WHEN et.type = 'Platinum' THEN 'Delegate Pass'
+                            ELSE et.title
+                        END AS ticket_title,
+                        COUNT(ud.id) AS count
+                    FROM users_delegate ud
+                    JOIN events_tickets et ON ud.package_id = et.id
+                    WHERE ud.date_day3 BETWEEN '2025-06-12 00:00:00' AND '2025-06-12 23:59:59' AND ud.events_id = 13
+                    GROUP BY ticket_title
+                `);
 
-    //             let totalCheckins = 0;
+                let totalCheckins = 0;
 
-    //             if (rows.length === 0) {
-    //                 await this.client.sendMessage(groupId, '*Attendance Summary*\nBelum ada peserta yang check-in hari ini.');
-    //             } else {
-    //                 let message = '*Attendance Summary (Day 3)*\n';
-    //                 for (const row of rows) {
-    //                     message += `• ${row.ticket_title}: ${row.count}\n`;
-    //                     totalCheckins += row.count;
-    //                 }
+                if (rows.length === 0) {
+                    await this.client.sendMessage(groupId, '*Attendance Summary*\nBelum ada peserta yang check-in hari ini.');
+                } else {
+                    let message = '*Attendance Summary (Day 3)*\n';
+                    for (const row of rows) {
+                        message += `• ${row.ticket_title}: ${row.count}\n`;
+                        totalCheckins += row.count;
+                    }
 
-    //                 message += `\n*Total Check-ins*: ${totalCheckins}`;
+                    message += `\n*Total Check-ins*: ${totalCheckins}`;
 
-    //                 await this.client.sendMessage(groupId, message.trim());
-    //             }
+                    await this.client.sendMessage(groupId, message.trim());
+                }
 
-    //         } catch (err) {
-    //             console.error(`❌ Gagal mengambil data attendance summary:`, err);
-    //         } finally {
-    //             connection.release();
-    //         }
-    //     }, {
-    //         timezone: 'Asia/Jakarta'
-    //     });
-    // }
+            } catch (err) {
+                console.error(`❌ Gagal mengambil data attendance summary:`, err);
+            } finally {
+                connection.release();
+            }
+        }, {
+            timezone: 'Asia/Jakarta'
+        });
+    }
 
     // Load active schedules from DB, register new ones and stop removed ones
     // KODE INI DIKEMBALIKAN SEPERTI SEMULA (DIKOMENTARI)
@@ -227,49 +228,30 @@ class SchedulerService {
             return;
         }
 
-        // =====================================================================
-        // >>>>>>> PERUBAHAN EKSPRESI CRON DI SINI <<<<<<<
-        // Jadwalkan setiap 15 menit, dari jam 15:00 - 18:59, pada tanggal 24 Juli 2025
-        // '*/15'  -> setiap 15 menit (pada menit 0, 15, 30, 45)
-        // '15-18' -> pada jam 15, 16, 17, 18
-        // '24'    -> pada hari ke-24 dalam bulan
-        // '7'     -> pada bulan Juli
-        // '*'     -> pada setiap hari dalam seminggu
-        cron.schedule('*/15 15-18 24 7 *', async () => {
-            // =====================================================================
+        // ============================================================
+        // PRODUKSI — 13 NOVEMBER, setiap 15 menit, 15:30–18:30 WIB
+        // Cron: menit */15, jam 15–18, tgl 13, bulan 11 (Nov)
+        cron.schedule('*/15 15-18 13 11 *', async () => {
+            console.log(`📊 [PROD] Menjalankan DMC Check-in Summary (*/15) - Via API POST`);
+            const now = new Date();
+            const hh = now.getHours();
+            const mm = now.getMinutes();
+            const dd = now.getDate();
+            const mo = now.getMonth() + 1; // 0-based
 
-            console.log(`📊 Menjalankan DMC Check-in Summary untuk grup ${groupId} (setiap 15 menit) - Via API POST`);
-            const currentTime = new Date();
-            const currentHour = currentTime.getHours();
-            const currentMinute = currentTime.getMinutes();
-            const currentDate = currentTime.getDate(); // Ambil tanggal hari ini
-            const currentMonth = currentTime.getMonth() + 1; // Ambil bulan hari ini (0-11) + 1
-
-            // --- VALIDASI TAMBAHAN UNTUK TANGGAL DAN WAKTU PRESISI ---
-            // Pastikan hanya berjalan pada 24 Juli
-            if (currentDate !== 24 || currentMonth !== 7) {
-                console.log(`Skipping DMC Check-in Summary. Not 24th July.`);
+            // Jalankan tepat pada 13 November
+            if (dd !== 13 || mo !== 11) {
+                console.log('Skipping: bukan 13 November.');
                 return;
             }
-
-            // Validasi untuk memastikan hanya berjalan antara 15:30 dan 18:30
-            if (currentHour === 15 && currentMinute < 30) {
-                console.log(`Skipping DMC Check-in Summary before 15:30.`);
+            // Batasi tepat 15:30 s.d. 18:30
+            if ((hh === 15 && mm < 30) || (hh === 18 && mm > 30)) {
+                console.log('Skipping: di luar window 15:30–18:30.');
                 return;
             }
-            if (currentHour === 18 && currentMinute > 30) {
-                console.log(`Skipping DMC Check-in Summary after 18:30.`);
-                return;
-            }
-            // --- AKHIR VALIDASI TAMBAHAN ---
 
             try {
-                const response = await axios.post(
-                    apiUrl,
-                    { event_id: eventId }
-                );
-
-                const rows = response.data;
+                const { data: rows } = await axios.post(apiUrl, { event_id: eventId });
 
                 let totalCheckins = 0;
                 let message = '*DMC Check-in Summary*\n';
@@ -279,7 +261,7 @@ class SchedulerService {
                 } else {
                     for (const row of rows) {
                         message += `• ${row.package_category}: ${row.count}\n`;
-                        totalCheckins += +row.count;
+                        totalCheckins += Number(row.count || 0);
                     }
                 }
 
@@ -287,23 +269,78 @@ class SchedulerService {
                 message += `\n*Update Terakhir*: ${new Date().toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' })}`;
 
                 await this.client.sendMessage(groupId, message.trim());
-
             } catch (err) {
-                console.error(`❌ Gagal mengambil data DMC Check-in Summary dari API (POST):`, err.message);
+                console.error('❌ [PROD] Gagal mengambil data DMC Check-in Summary (POST):', err.message);
                 if (err.response) {
                     console.error('API Response Error Data:', err.response.data);
                     console.error('API Response Status:', err.response.status);
                     console.error('API Response Headers:', err.response.headers);
                 } else if (err.request) {
                     console.error('API Request Error: No response received');
-                } else {
-                    console.error('API General Error:', err.message);
                 }
             }
-        }, {
-            timezone: 'Asia/Jakarta'
-        });
+        }, { timezone: 'Asia/Jakarta' });
+
+        // ============================================================
+        // TEST — HARI INI 6 NOVEMBER, setiap 5 menit, 13:00–18:59 WIB
+        // Cron: menit */5, jam 13–18, tgl 6, bulan 11 (Nov)
+        cron.schedule('*/5 13-18 7 11 *', async () => {
+            console.log(`🧪 [TEST] Menjalankan DMC Check-in Summary (*/5) - Via API POST`);
+            const now = new Date();
+            const hh = now.getHours();
+            const dd = now.getDate();
+            const mo = now.getMonth() + 1;
+
+            // Jalankan hanya 6 November
+            if (dd !== 6 || mo !== 11) {
+                console.log('Skipping TEST: bukan 6 November.');
+                return;
+            }
+
+            // === RANDOM TAG FUNCTION ===
+            function randTag(length = 6) {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                let result = '';
+                for (let i = 0; i < length; i++) {
+                    result += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                return result;
+            }
+
+            try {
+                const { data: rows } = await axios.post(apiUrl, { event_id: eventId });
+
+                let totalCheckins = 0;
+                const tag = randTag(); // ex: "S4P2QK"
+                let message = `*[TEST] DMC Check-in Summary* [${tag}]\n`;
+
+                if (!rows || rows.length === 0) {
+                    message += 'Belum ada data check-in.\n';
+                } else {
+                    for (const row of rows) {
+                        message += `• ${row.package_category}: ${row.count}\n`;
+                        totalCheckins += Number(row.count || 0);
+                    }
+                }
+
+                message += `\n*Total Checked-in*: ${totalCheckins}`;
+                message += `\n*Update Terakhir*: ${new Date().toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' })}`;
+                message += `\nRef: ${tag}`;
+
+                await this.client.sendMessage(groupId, message.trim());
+            } catch (err) {
+                console.error('❌ [TEST] Gagal mengambil data DMC Check-in Summary (POST):', err.message);
+                if (err.response) {
+                    console.error('API Response Error Data:', err.response.data);
+                    console.error('API Response Status:', err.response.status);
+                    console.error('API Response Headers:', err.response.headers);
+                } else if (err.request) {
+                    console.error('API Request Error: No response received');
+                }
+            }
+        }, { timezone: 'Asia/Jakarta' });
     }
+
 
     // =========================================================================
 
@@ -311,13 +348,13 @@ class SchedulerService {
     // Start the scheduler: initial load, then polling every minute
     async start() {
         // KODE INI DIKEMBALIKAN SEPERTI SEMULA (DIKOMENTARI)
-        await this.loadAndSchedule();
+        // await this.loadAndSchedule();
 
         // Jadwalkan attendance summary (jika perlu, uncomment)
         // await this.scheduleAttendanceSummary();
 
         // >>>>>>> Panggil fungsi baru di sini - TETAP ADA <<<<<<<
-        // await this.scheduleDmcCheckinSummary();
+        await this.scheduleDmcCheckinSummary();
 
         // Poll every minute to pick up DB changes
         // KODE INI DIKEMBALIKAN SEPERULA (DIKOMENTARI)
@@ -344,6 +381,8 @@ class SchedulerService {
         //         monitor.start().catch(err => {
         //             console.error(`❌ MonitorService gagal dimulai untuk grup ${gid}:`, err);
         //         });
+        //     }
+        // }
     }
 }
 
