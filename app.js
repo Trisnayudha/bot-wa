@@ -26,13 +26,25 @@ client.on('qr', (qr) => {
     qrcode.generate(qr, { small: true });
 });
 
-client.on('ready', () => {
+client.on('ready', async () => {
     console.log('WhatsApp bot sudah siap!');
+
+    // 🔥 PATCH WA WEB INTERNAL (FINAL FIX)
+    const page = client.pupPage;
+
+    await page.evaluate(() => {
+        if (window.WWebJS && window.WWebJS.sendSeen) {
+            console.log('[PATCH] sendSeen disabled');
+            window.WWebJS.sendSeen = async () => true;
+        }
+    });
+
     const scheduler = new SchedulerService(client);
     scheduler.start();
 
     messageRoutes.setClient(client);
 });
+
 
 client.on('message', async (message) => {
     await messageRoutes.routeMessage(message);
