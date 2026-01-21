@@ -1,17 +1,27 @@
 // app.js
 const { Client, LocalAuth } = require('whatsapp-web.js');
+
+/**
+ * 🔥 PATCH KRITIKAL
+ * Disable sendSeen (BUG WA WEB markedUnread)
+ */
+Client.prototype.sendSeen = async function () {
+    return true;
+};
+
 const qrcode = require('qrcode-terminal');
 const messageRoutes = require('./routes/messageRoutes');
 const guildController = require('./controllers/guildController');
-const SchedulerService = require('./services/schedulerService');  // Import
+const SchedulerService = require('./services/schedulerService');
 
 // Membuat client WhatsApp
 const client = new Client({
-    authStrategy: new LocalAuth(),  // Menggunakan LocalAuth untuk menyimpan session
+    authStrategy: new LocalAuth(),
     puppeteer: {
-        args: ['--no-sandbox', '--disable-setuid-sandbox']  // Menambahkan opsi untuk bypass sandboxing
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
     }
 });
+
 client.on('qr', (qr) => {
     qrcode.generate(qr, { small: true });
 });
@@ -21,9 +31,8 @@ client.on('ready', () => {
     const scheduler = new SchedulerService(client);
     scheduler.start();
 
-    messageRoutes.setClient(client); // ⬅️ Tambahkan ini
+    messageRoutes.setClient(client);
 });
-
 
 client.on('message', async (message) => {
     await messageRoutes.routeMessage(message);
