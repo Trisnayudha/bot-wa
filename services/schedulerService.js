@@ -229,35 +229,42 @@ class SchedulerService {
         }
 
         // ============================================================
-        // PRODUKSI — 13 NOVEMBER, setiap 15 menit, 15:30–18:30 WIB
-        // Cron: menit */15, jam 15–18, tgl 13, bulan 11 (Nov)
-        cron.schedule('*/15 15-18 13 11 *', async () => {
-            console.log(`📊 [PROD] Menjalankan DMC Check-in Summary (*/15) - Via API POST`);
+        // PRODUKSI — 12 FEBRUARI 2026
+        // Setiap 15 menit, jam 15:00–18:00 WIB
+        // ============================================================
+
+        cron.schedule('*/15 15-18 12 2 *', async () => {
+            console.log(`📊 [PROD] DMC Check-in Summary - 12 Februari 2026`);
+
             const now = new Date();
             const hh = now.getHours();
             const mm = now.getMinutes();
             const dd = now.getDate();
-            const mo = now.getMonth() + 1; // 0-based
+            const mo = now.getMonth() + 1;
+            const year = now.getFullYear();
 
-            // Jalankan tepat pada 13 November
-            if (dd !== 13 || mo !== 11) {
-                console.log('Skipping: bukan 13 November.');
+            // 🔒 Pastikan hanya 12 Februari 2026
+            if (dd !== 12 || mo !== 2 || year !== 2026) {
+                console.log('Skipping: bukan 12 Februari 2026.');
                 return;
             }
-            // Batasi tepat 15:30 s.d. 18:30
-            if ((hh === 15 && mm < 30) || (hh === 18 && mm > 30)) {
-                console.log('Skipping: di luar window 15:30–18:30.');
+
+            // 🔒 Batasi sampai tepat jam 18:00
+            if (hh === 18 && mm > 0) {
+                console.log('Skipping: lewat jam 18:00.');
                 return;
             }
 
             try {
-                const { data: rows } = await axios.post(apiUrl, { event_id: eventId });
+                const { data: rows } = await axios.post(apiUrl, {
+                    event_id: eventId
+                });
 
                 let totalCheckins = 0;
                 let message = '*DMC Check-in Summary*\n';
 
                 if (!rows || rows.length === 0) {
-                    message += 'Belum ada peserta yang check-in untuk event DMC ini.\n';
+                    message += 'Belum ada peserta yang check-in.\n';
                 } else {
                     for (const row of rows) {
                         message += `• ${row.package_category}: ${row.count}\n`;
@@ -266,79 +273,28 @@ class SchedulerService {
                 }
 
                 message += `\n*Total Checked-in*: ${totalCheckins}`;
-                message += `\n*Update Terakhir*: ${new Date().toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' })}`;
+                message += `\n*Update Terakhir*: ${new Date().toLocaleTimeString('id-ID', {
+                    timeZone: 'Asia/Jakarta'
+                })}`;
 
                 await this.client.sendMessage(groupId, message.trim());
+
             } catch (err) {
-                console.error('❌ [PROD] Gagal mengambil data DMC Check-in Summary (POST):', err.message);
+                console.error('❌ [PROD] Gagal mengambil data DMC Check-in Summary:', err.message);
+
                 if (err.response) {
-                    console.error('API Response Error Data:', err.response.data);
+                    console.error('API Response Data:', err.response.data);
                     console.error('API Response Status:', err.response.status);
-                    console.error('API Response Headers:', err.response.headers);
                 } else if (err.request) {
                     console.error('API Request Error: No response received');
                 }
             }
-        }, { timezone: 'Asia/Jakarta' });
 
-        // ============================================================
-        // TEST — HARI INI 6 NOVEMBER, setiap 5 menit, 13:00–18:59 WIB
-        // Cron: menit */5, jam 13–18, tgl 6, bulan 11 (Nov)
-        cron.schedule('*/5 13-18 7 11 *', async () => {
-            console.log(`🧪 [TEST] Menjalankan DMC Check-in Summary (*/5) - Via API POST`);
-            const now = new Date();
-            const hh = now.getHours();
-            const dd = now.getDate();
-            const mo = now.getMonth() + 1;
+        }, {
+            timezone: 'Asia/Jakarta'
+        });
 
-            // Jalankan hanya 6 November
-            if (dd !== 6 || mo !== 11) {
-                console.log('Skipping TEST: bukan 6 November.');
-                return;
-            }
-
-            // === RANDOM TAG FUNCTION ===
-            function randTag(length = 6) {
-                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                let result = '';
-                for (let i = 0; i < length; i++) {
-                    result += chars.charAt(Math.floor(Math.random() * chars.length));
-                }
-                return result;
-            }
-
-            try {
-                const { data: rows } = await axios.post(apiUrl, { event_id: eventId });
-
-                let totalCheckins = 0;
-                const tag = randTag(); // ex: "S4P2QK"
-                let message = `*[TEST] DMC Check-in Summary* [${tag}]\n`;
-
-                if (!rows || rows.length === 0) {
-                    message += 'Belum ada data check-in.\n';
-                } else {
-                    for (const row of rows) {
-                        message += `• ${row.package_category}: ${row.count}\n`;
-                        totalCheckins += Number(row.count || 0);
-                    }
-                }
-
-                message += `\n*Total Checked-in*: ${totalCheckins}`;
-                message += `\n*Update Terakhir*: ${new Date().toLocaleTimeString('id-ID', { timeZone: 'Asia/Jakarta' })}`;
-                message += `\nRef: ${tag}`;
-
-                await this.client.sendMessage(groupId, message.trim());
-            } catch (err) {
-                console.error('❌ [TEST] Gagal mengambil data DMC Check-in Summary (POST):', err.message);
-                if (err.response) {
-                    console.error('API Response Error Data:', err.response.data);
-                    console.error('API Response Status:', err.response.status);
-                    console.error('API Response Headers:', err.response.headers);
-                } else if (err.request) {
-                    console.error('API Request Error: No response received');
-                }
-            }
-        }, { timezone: 'Asia/Jakarta' });
+        console.log('🚀 Scheduler DMC aktif (12 Februari 2026 | 15:00–18:00 WIB)');
     }
 
 

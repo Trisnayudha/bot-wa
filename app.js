@@ -14,10 +14,13 @@ const messageRoutes = require('./routes/messageRoutes');
 const guildController = require('./controllers/guildController');
 const SchedulerService = require('./services/schedulerService');
 
+let schedulerStarted = false;
+
 // Membuat client WhatsApp
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
+        headless: true,
         args: ['--no-sandbox', '--disable-setuid-sandbox']
     }
 });
@@ -26,25 +29,31 @@ client.on('qr', (qr) => {
     qrcode.generate(qr, { small: true });
 });
 
-client.on('ready', async () => {
+client.once('ready', async () => {
     console.log('WhatsApp bot sudah siap!');
 
-    // 🔥 PATCH WA WEB INTERNAL (FINAL FIX)
-    const page = client.pupPage;
+    try {
+        const page = client.pupPage;
 
-    await page.evaluate(() => {
-        if (window.WWebJS && window.WWebJS.sendSeen) {
-            console.log('[PATCH] sendSeen disabled');
-            window.WWebJS.sendSeen = async () => true;
-        }
-    });
+        await page.evaluate(() => {
+            if (window.WWebJS && window.WWebJS.sendSeen) {
+                window.WWebJS.sendSeen = async () => true;
+            }
+        });
 
-    const scheduler = new SchedulerService(client);
-    scheduler.start();
+    } catch (err) {
+        console.log('[PATCH ERROR]', err.message);
+    }
+
+    // 🔥 START SCHEDULER ONLY ONCE
+    if (!schedulerStarted) {
+        const scheduler = new SchedulerService(client);
+        scheduler.start();
+        schedulerStarted = true;
+    }
 
     messageRoutes.setClient(client);
 });
-
 
 client.on('message', async (message) => {
     await messageRoutes.routeMessage(message);
@@ -56,6 +65,10 @@ client.on('group_join', async (notification) => {
 
 client.on('group_leave', async (notification) => {
     await guildController.handleGroupLeave(notification, client);
+});
+
+client.on('disconnected', (reason) => {
+    console.log('Client disconnected:', reason);
 });
 
 client.initialize();
